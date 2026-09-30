@@ -11,7 +11,7 @@
     --muted: #8b8880; --hairline: #e3e1d8; --grid: #eceae2;
     --accent: #1c5cab; --accent-soft: #e3edf9; --warm: #b34a1e; --warm-soft: #f7e8df;
     --beta: #5598e7; --navy: #0d366b; --red: #d03b3b; --violet: #4a3aa7; --aqua: #0f9166;
-    --arb: #d95926;
+    --arb: #d95926; --magenta: #c3457c;
     --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
   /* This page deliberately commits to a single light look for legibility. */
@@ -75,6 +75,9 @@
     color: var(--secondary); margin: 0 2px 8px; align-items: center; }
   .xw .sw { display: inline-block; width: 20px; height: 0; border-top: 3.5px solid;
     margin-right: 5px; vertical-align: middle; }
+  .xw .lgd { cursor: pointer; user-select: none; border-radius: 4px; padding: 1px 3px; }
+  .xw .lgd:hover { background: var(--grid); }
+  .xw .lgd.off { opacity: 0.38; text-decoration: line-through; }
   .xw .xw-hint { font-size: 12px; color: var(--muted); margin-left: auto; }
   .xw .xw-body { display: flex; gap: 14px; align-items: stretch; flex-wrap: wrap; }
   .xw svg { flex: 1 1 480px; min-width: 0; height: auto; align-self: flex-start; }
@@ -240,7 +243,8 @@
     combination provably beats the frontier, and in every such case it turned out to be one
     model's mishandled answer format. The <b>orange line</b> is twice the error of the best
     combination the search finds at each budget (in sample), so black minus orange is twice the
-    found arbitrage, whether or not the core test certifies it.</figcaption>
+    found arbitrage, whether or not the core test certifies it; the <b>magenta line</b> plots that
+    difference directly.</figcaption>
   </figure>
 
   <h2>Explore all ten markets</h2>
@@ -373,28 +377,53 @@ function initExplorer(root, DATA, opts) {
     bs.forEach((r, i) => { const d = Math.abs(r.b1k - DATA.defaultB1k);
       if (d < best) { best = d; sel = i; } }); }
 
-  const legendRows = [
-    [`twice the ${opts.frontierName || "frontier"} error, 2α(B)`, "--ink", "solid"]]
-    .concat(hasMix ? [[opts.mixLabel || "2α of the doctored menu", "--ink", "dotted"]] : [])
-    .concat([["twice the best combination found, in sample", "--arb", "solid"],
-             ["largest hard core, β", "--beta", "solid"],
-             ["largest all-0/1 core", "--aqua", "dotted"],
-             ["ceiling: best member relabeled, ×2", "--navy", "dashed"],
-             ["ceiling without relabeling", "--red", "dashed"],
-             ["all members wrong", "--violet", "solid"]]);
+  const SERIES = [
+    { key: "twoAlpha", label: `twice the ${opts.frontierName || "frontier"} error, 2α(B)`,
+      c: "--ink", st: "solid", dash: null, w: 3.4 }]
+    .concat(hasMix ? [{ key: "twoAlphaMix", label: opts.mixLabel || "2α of the doctored menu",
+                        c: "--ink", st: "dotted", dash: "2 4", w: 2 }] : [])
+    .concat([
+    { key: "arb2", label: "twice the best combination found, in sample",
+      c: "--arb", st: "solid", dash: null, w: 2.4 },
+    { key: "gap2", label: "twice the arbitrage gap (black minus orange)",
+      c: "--magenta", st: "solid", dash: null, w: 2.2 },
+    { key: "beta", label: "largest hard core, β", c: "--beta", st: "solid", dash: null, w: 3.6 },
+    { key: "betaInt", label: "largest all-0/1 core", c: "--aqua", st: "dotted", dash: "2 4.5", w: 2.6 },
+    { key: "ceil", label: "ceiling: best member relabeled, ×2", c: "--navy", st: "dashed", dash: "6 5", w: 2.4 },
+    { key: "ceilRaw", label: "ceiling without relabeling", c: "--red", st: "dashed", dash: "8 5", w: 2.6 },
+    { key: "allWrong", label: "all members wrong", c: "--violet", st: "solid", dash: null, w: 2.8 }]);
+  const vis = {};
+  SERIES.forEach(s => { vis[s.key] = true; });
+  const PAINT = ["ceilRaw", "allWrong", "gap2", "twoAlpha", "twoAlphaMix", "arb2",
+                 "beta", "ceil", "betaInt"];
+  const val = (r, key) => key === "gap2" ? r.twoAlpha - r.arb2 : r[key];
   const hasCert = bs.some(r => r.cert);
   root.innerHTML =
-    `<div class="xw-legend">${legendRows.map(([t, c, st]) =>
-       `<span><span class="sw" style="border-color:var(${c}); border-top-style:${st}"></span>${t}</span>`).join("")}
+    `<div class="xw-legend">${SERIES.map(s =>
+       `<span class="lgd" data-key="${s.key}" role="button" tabindex="0"
+         title="click to show or hide this line"><span class="sw"
+         style="border-color:var(${s.c}); border-top-style:${s.st}"></span>${s.label}</span>`).join("")}
      <span><span style="color:var(--beta); margin-right:5px; font-size:12px; vertical-align:middle;">▲</span>the selected collection's members, at twice their error</span>
      ${hasCert ? '<span><span style="color:var(--warm); margin-right:5px; font-size:15px; vertical-align:middle;">★</span>the certified combination, at twice its error</span>' : ""}
-     <span class="xw-hint">click a budget &middot; &larr; &rarr; to step</span></div>
+     <span class="xw-hint">click a budget &middot; &larr; &rarr; to step &middot; click a legend entry to toggle its line</span></div>
      <div class="xw-body"><svg viewBox="0 0 ${W} ${H}" role="img"></svg>
      <div class="xw-side"><div class="xcard" data-card="budget"></div>
      <div class="xcard" data-card="frontier"></div><div class="xcard" data-card="collection"></div>
      <div class="xcard" data-card="cert"></div>
      <div class="xcard" data-card="ceiling"></div><div class="xcard" data-card="core"></div></div></div>`;
   const svg = root.querySelector("svg");
+  root.querySelectorAll(".lgd").forEach(lg => {
+    const toggle = () => {
+      const k = lg.dataset.key;
+      vis[k] = !vis[k];
+      lg.classList.toggle("off", !vis[k]);
+      drawChart();
+    };
+    lg.addEventListener("click", toggle);
+    lg.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { toggle(); e.preventDefault(); e.stopPropagation(); }
+    });
+  });
 
   function el(name, attrs, parent) {
     const e = document.createElementNS(NS, name);
@@ -404,7 +433,7 @@ function initExplorer(root, DATA, opts) {
   function stepPath(key) {
     let p = "";
     bs.forEach((r, i) => {
-      const x = X(r.b1k), y = Y(r[key]);
+      const x = X(r.b1k), y = Y(val(r, key));
       p += (i ? `H${x.toFixed(1)}V${y.toFixed(1)}` : `M${x.toFixed(1)} ${y.toFixed(1)}`);
     });
     return p + `H${X(xmax).toFixed(1)}`;
@@ -429,25 +458,22 @@ function initExplorer(root, DATA, opts) {
                  transform: `rotate(-90 14 ${(MT + H - MB) / 2})`, "text-anchor": "middle"
                }).textContent = "share of the benchmark";
     el("line", { x1: ML, x2: W - MR, y1: Y(0), y2: Y(0), stroke: css("--hairline"), "stroke-width": 1.2 });
-    bs.forEach((r, i) => {
+    if (vis.beta && vis.twoAlpha) bs.forEach((r, i) => {
       if (r.beta < r.twoAlpha - 1e-9) {
         const x2 = (i + 1 < bs.length) ? X(bs[i + 1].b1k) : X(xmax);
         el("rect", { x: X(r.b1k), y: Y(r.twoAlpha), width: x2 - X(r.b1k),
                      height: Y(r.beta) - Y(r.twoAlpha), fill: css("--warm"), opacity: 0.15 });
       }
     });
-    el("path", { d: stepPath("ceilRaw"), fill: "none", stroke: css("--red"), "stroke-width": 2.6,
-                 "stroke-dasharray": "8 5" });
-    el("path", { d: stepPath("allWrong"), fill: "none", stroke: css("--violet"), "stroke-width": 2.8 });
-    el("path", { d: stepPath("twoAlpha"), fill: "none", stroke: css("--ink"), "stroke-width": 3.4 });
-    if (hasMix) el("path", { d: stepPath("twoAlphaMix"), fill: "none", stroke: css("--ink"),
-                             "stroke-width": 2, "stroke-dasharray": "2 4" });
-    el("path", { d: stepPath("arb2"), fill: "none", stroke: css("--arb"), "stroke-width": 2.4 });
-    el("path", { d: stepPath("beta"), fill: "none", stroke: css("--beta"), "stroke-width": 3.6 });
-    el("path", { d: stepPath("ceil"), fill: "none", stroke: css("--navy"), "stroke-width": 2.4,
-                 "stroke-dasharray": "6 5" });
-    el("path", { d: stepPath("betaInt"), fill: "none", stroke: css("--aqua"), "stroke-width": 2.6,
-                 "stroke-dasharray": "2 4.5" });
+    const byKey = {};
+    SERIES.forEach(s => { byKey[s.key] = s; });
+    PAINT.forEach(k => {
+      const s = byKey[k];
+      if (!s || !vis[k]) return;
+      const attrs = { d: stepPath(k), fill: "none", stroke: css(s.c), "stroke-width": s.w };
+      if (s.dash) attrs["stroke-dasharray"] = s.dash;
+      el("path", attrs);
+    });
     bs.forEach((r, i) => {
       el("path", { d: `M${X(r.b1k)} ${H - MB}l-4 7h8z`,
                    fill: i === sel ? css("--accent") : css("--hairline") });
@@ -497,6 +523,7 @@ function initExplorer(root, DATA, opts) {
       [`twice ${fLabel}'s error, 2α`, r.twoAlpha, "--ink", "solid"]]
       .concat(hasMix ? [[opts.mixLabel || "2α of the doctored menu", r.twoAlphaMix, "--ink", "dotted"]] : [])
       .concat([["twice the best combination found, in sample", r.arb2, "--arb", "solid"],
+               ["twice the arbitrage gap (black minus orange)", r.twoAlpha - r.arb2, "--magenta", "solid"],
                ["largest hard core, β", r.beta, "--beta", "solid"],
                ["largest all-0/1 core (subset)", r.betaInt, "--aqua", "dotted"],
                ["ceiling: best member relabeled, ×2", r.ceil, "--navy", "dashed"],
