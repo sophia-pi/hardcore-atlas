@@ -39,6 +39,18 @@
   figcaption { font-size: 14px; color: var(--secondary); margin-top: 10px; line-height: 1.5; }
   figcaption b { color: var(--ink); }
   code { font-family: var(--mono); font-size: 0.86em; }
+  .tablewrap { overflow-x: auto; margin: 24px 0; }
+  .tablewrap table { border-collapse: collapse; font-size: 14px; min-width: 560px; width: 100%;
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 6px; }
+  .tablewrap th { text-align: left; font-weight: 600; color: var(--secondary); padding: 9px 12px;
+    border-bottom: 1px solid var(--hairline); white-space: nowrap; }
+  .tablewrap td { padding: 8px 12px; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+  .tablewrap tr:last-child td { border-bottom: none; }
+  .tablewrap td.num { font-family: var(--mono); font-size: 13px;
+    font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pos { color: var(--warm); font-weight: 600; }
+  .aside { border-left: 2px solid var(--hairline); padding: 2px 0 2px 18px; margin: 22px 0;
+    color: var(--secondary); font-size: 15.5px; }
   a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
   .footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--hairline);
             font-size: 13.5px; color: var(--muted); line-height: 1.6; }
@@ -234,6 +246,36 @@
   of one model with a changed "no parse" row is the arbitrage this project actually found in real
   markets: models fumbling their answer format, an inefficiency that disappeared by 2025.</p>
   <div class="xw" id="w1" tabindex="0" aria-label="Interactive chart: the hard core of every market, budget by budget. Use the tabs to switch market and the left and right arrow keys to change the selected budget."></div>
+
+  <h2>Why the light-blue line never dips below the dark-blue one</h2>
+  <p>Clicking around the markets above, one regularity stands out: the light-blue core always sits
+  exactly on the dark-blue ceiling, never below it. That is not an artifact of the computation. A
+  ceiling gap is a demanding condition. To reach the ceiling, the program must bring the
+  collection's <em>best</em> member exactly to chance: take all of its errors plus an equal mass
+  of questions it answers correctly, chosen so that every <em>other</em> member is held at half
+  too. Against any single other member this is always possible, because every other member has at
+  least as many errors as the best one. The construction can only fail <em>jointly</em>, when
+  several members would each need that balancing set to consist mostly of their own errors at
+  once, which requires their errors to be nearly disjoint and their accuracies nearly equal. A
+  gap below the ceiling is certified teamwork, and teamwork needs error diversity.</p>
+  <p>Real model menus have almost none: models make the same mistakes. In the January 2025
+  collection, between 63 and 82 percent of the best member's errors are shared with each
+  individual other member, three to eight times what independent errors would give. Because
+  everyone fails on largely the same questions, one balancing set serves all members at once. A
+  counterfactual proves this is the mechanism: keep every member's exact error <em>rate</em>, but
+  scatter its errors uniformly at random, and re-run the identical computation.</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>Headline collection</th><th>Real: &beta; / ceiling / gap</th><th>Errors decorrelated: &beta; / ceiling / gap</th></tr>
+    <tr><td>April 2024 (6 members)</td><td class="num">0.349 / 0.349 / 0.00</td><td class="num">0.23 / 0.349 / <span class="pos">11.1&ndash;12.4pp</span></td></tr>
+    <tr><td>January 2025 (9 members)</td><td class="num">0.247 / 0.247 / 0.00</td><td class="num">0.03 / 0.247 / <span class="pos">21.1&ndash;21.6pp</span></td></tr>
+  </table>
+  </div>
+  <p class="aside">Ranges are over three random seeds. With independent mistakes the 2025 core
+  collapses from a quarter of the benchmark to three percent; a market like that would also be
+  wildly inefficient, with simple votes demolishing the frontier, which is why the hypothesis
+  predicts you will never observe one. So the two dials that create a ceiling gap are low error
+  overlap and near-equal accuracies. The market below turns both, on purpose.</p>
 
   <h2>A market built to violate the hypothesis</h2>
   <p>Every market above is real, and the test never certified any collective advantage: the
