@@ -330,7 +330,7 @@
   exists (the star, with its explicit affine weights), and, when toggled on, the worked example
   with its ceiling relabeling and its core's size, composition, and subjects. The orange line tracks the best
   combination the search finds at every budget, certified or not, so the found arbitrage is
-  always visible. Where the ochre minimum dips below black, the minimizing collection's members and its own certified combination are drawn in ochre, triangles and star. Wherever the orange line beats black, the found combination itself is marked in magenta, star and triangles, with its makeup in the sidebar. Each market opens at its own largest-deficit budget. The greedy collection's layers (light blue, green, the ceilings, violet, and its triangles and warm star) are hidden by default, since the ochre minimum already accounts for every affordable collection; click their legend entries to bring them back. Two reading notes: on the live tabs the 250-question sample makes the
+  always visible. Where the ochre minimum dips below black, the minimizing collection's members and its own certified combination are drawn in ochre, triangles and star. Wherever the orange line beats black, the found combination itself is marked in magenta, a star and triangles drawn point-down and at twice the size so they stay readable where they overlap the ochre marks (which sit on top); the sidebar then lists its makeup and writes out its weighted vote and decision rule in the same affine form as the certified combinations. Each market opens at its own largest-deficit budget. The greedy collection's layers (light blue, green, the ceilings, violet, and its triangles and warm star) are hidden by default, since the ochre minimum already accounts for every affordable collection; click their legend entries to bring them back. Two reading notes: on the live tabs the 250-question sample makes the
   core's subject composition unstable, so read those for the sizes; and a "certified combination"
   of one model with a changed "no parse" row is the arbitrage this project actually found in real
   markets: models fumbling their answer format, an inefficiency that disappeared by 2025.</p>
@@ -494,7 +494,7 @@ function initExplorer(root, DATA, opts) {
      ${hasCert ? '<span><span style="color:var(--warm); margin-right:5px; font-size:15px; vertical-align:middle;">★</span>the certified combination, at twice its error</span>' : ""}
      ${bs.some(r => r.minG) ? '<span><span style="color:var(--ochre); margin-right:5px; font-size:12px; vertical-align:middle;">▲</span>the minimizing collection’s members</span>' : ""}
      ${bs.some(r => r.minCert) ? '<span><span style="color:var(--ochre); margin-right:5px; font-size:15px; vertical-align:middle;">★</span>its certified combination</span>' : ""}
-     ${bs.some(r => r.found && r.twoAlpha - r.arb2 > 0.002) ? '<span><span style="color:var(--magenta); margin-right:5px; font-size:12px; vertical-align:middle;">▲</span>the found combination’s members</span><span><span style="color:var(--magenta); margin-right:5px; font-size:15px; vertical-align:middle;">★</span>the best combination found, at twice its error</span>' : ""}
+     ${bs.some(r => r.found && r.twoAlpha - r.arb2 > 0.002) ? '<span><span style="color:var(--magenta); margin-right:5px; font-size:15px; vertical-align:middle;">▼</span>the found combination’s members (point-down, larger)</span><span><span style="color:var(--magenta); margin-right:5px; font-size:17px; vertical-align:middle;">★</span>the best combination found, at twice its error</span>' : ""}
      <span class="xw-hint">click a budget &middot; &larr; &rarr; to step &middot; click a legend entry to toggle its line</span></div>
      <div class="xw-body"><svg viewBox="0 0 ${W} ${H}" role="img"></svg>
      <div class="xw-side"><div class="xcard" data-card="budget"></div>
@@ -577,14 +577,15 @@ function initExplorer(root, DATA, opts) {
     const r = bs[sel], x = X(r.b1k);
     el("line", { x1: x, x2: x, y1: MT, y2: H - MB, stroke: css("--secondary"),
                  "stroke-width": 1, "stroke-dasharray": "2 3" });
-    const tri = (m, color) => {
+    const tri = (m, color, o) => {
+      o = o || {};
+      const sc = o.scale || 1, f = o.flip ? -1 : 1;
       const mx = X(Math.min(Math.max(m.cost1k, xmin), xmax));
       const my = Math.max(MT + 6, Math.min(Y(0) - 2, Y(2 * m.err)));
-      el("path", { d: `M${mx.toFixed(1)} ${(my - 6.5).toFixed(1)}L${(mx - 6).toFixed(1)} ${(my + 5).toFixed(1)}L${(mx + 6).toFixed(1)} ${(my + 5).toFixed(1)}Z`,
+      el("path", { d: `M${mx.toFixed(1)} ${(my - f * 6.5 * sc).toFixed(1)}L${(mx - 6 * sc).toFixed(1)} ${(my + f * 5 * sc).toFixed(1)}L${(mx + 6 * sc).toFixed(1)} ${(my + f * 5 * sc).toFixed(1)}Z`,
                    fill: css(color), stroke: css("--surface"), "stroke-width": 1.5 });
     };
     if (vis.beta) DATA.collections[r.cid].members.forEach(m => tri(m, "--beta"));
-    if (r.minG && vis.minCore) r.minG.forEach(m => tri(m, "--ochre"));
     el("circle", { cx: x, cy: Y(r.ceil), r: 8, fill: "none", stroke: css("--navy"), "stroke-width": 1.6 });
     el("circle", { cx: x, cy: Y(r.ceilRaw), r: 4, fill: css("--red"), stroke: css("--surface"), "stroke-width": 1.6 });
     el("circle", { cx: x, cy: Y(r.allWrong), r: 4, fill: css("--violet"), stroke: css("--surface"), "stroke-width": 1.6 });
@@ -592,21 +593,26 @@ function initExplorer(root, DATA, opts) {
     el("circle", { cx: x, cy: Y(r.beta), r: 5, fill: css("--beta"), stroke: css("--surface"), "stroke-width": 2 });
     el("text", { x: Math.min(x + 8, W - 120), y: MT + 14, "font-size": 12, fill: css("--ink"),
                  "font-family": "IBM Plex Mono, monospace" }).textContent = "$" + fmt$(r.b1k) + "/1k";
-    const star = (sx, sy, color) => {
+    const star = (sx, sy, color, o) => {
+      o = o || {};
+      const sc = o.scale || 1, a0 = o.flip ? Math.PI / 2 : -Math.PI / 2;
       let d = "";
       for (let k = 0; k < 10; k++) {
-        const ang = -Math.PI / 2 + k * Math.PI / 5, rad = k % 2 ? 4.2 : 10;
+        const ang = a0 + k * Math.PI / 5, rad = (k % 2 ? 4.2 : 10) * sc;
         d += (k ? "L" : "M") + (sx + rad * Math.cos(ang)).toFixed(1) + " "
            + (sy + rad * Math.sin(ang)).toFixed(1);
       }
       el("path", { d: d + "Z", fill: css(color), stroke: css("--surface"), "stroke-width": 1.6 });
     };
-    if (vis.arb2 && r.found && (r.twoAlpha - r.arb2) > 0.002) {
-      r.found.members.forEach(m => { if (m.cost1k !== undefined && m.err !== undefined) tri(m, "--magenta"); });
-      star(X(Math.max(r.found.cost1k, xmin)), Y(r.arb2), "--magenta");
-    }
-    if (r.minCert && vis.minCore) star(X(Math.max(r.minCert.cost1k, xmin)), Y(2 * r.minCert.err), "--ochre");
     if (r.cert && vis.beta) star(X(Math.max(r.cert.cost1k, xmin)), Y(2 * r.cert.err), "--warm");
+    // the found combination's marks are point-down and doubled so they stay visible
+    // under the ochre marks; the ochre marks are drawn last, on top of everything.
+    if (vis.arb2 && r.found && (r.twoAlpha - r.arb2) > 0.002) {
+      r.found.members.forEach(m => { if (m.cost1k !== undefined && m.err !== undefined) tri(m, "--magenta", { flip: true, scale: 2 }); });
+      star(X(Math.max(r.found.cost1k, xmin)), Y(r.arb2), "--magenta", { flip: true, scale: 2 });
+    }
+    if (r.minG && vis.minCore) r.minG.forEach(m => tri(m, "--ochre"));
+    if (r.minCert && vis.minCore) star(X(Math.max(r.minCert.cost1k, xmin)), Y(2 * r.minCert.err), "--ochre");
     bs.forEach((r2, i) => {
       const x1 = i ? (X(bs[i - 1].b1k) + X(r2.b1k)) / 2 : ML;
       const x2 = (i + 1 < bs.length) ? (X(r2.b1k) + X(bs[i + 1].b1k)) / 2 : W - MR;
@@ -676,6 +682,20 @@ function initExplorer(root, DATA, opts) {
       minEl.hidden = true;
       minEl.innerHTML = "";
     }
+    const mapTxt = m => {
+      const ch = m.maps.filter(x => x.changed);
+      if (!ch.length) return "as written";
+      return ch.map(x => `${esc(x.out)} → ${esc(x.to)}`).join(", ")
+        + (m.maps.length > ch.length ? "; rest as written" : "");
+    };
+    const wtable = cc =>
+      `<table><tr><th class="r">weight</th><th>model</th><th>outputs read</th></tr>
+       ${cc.members.map(m =>
+          `<tr><td class="num">${m.weight.toFixed(3)}</td><td>${esc(m.model)}</td>
+           <td>${m.weight >= 1e-4 ? mapTxt(m) : "—"}</td></tr>`).join("")}
+       ${cc.consts.map(k =>
+          `<tr><td class="num">${k.weight.toFixed(3)}</td><td colspan="2">the constant answer ${esc(k.label)}</td></tr>`).join("")}
+       </table>`;
     const foundEl = root.querySelector('[data-card="found"]');
     const fgap = r.twoAlpha - r.arb2;
     if (r.found && fgap > 0.002) {
@@ -686,24 +706,58 @@ function initExplorer(root, DATA, opts) {
                          vote: "a uniform plurality vote, equal weights",
                          certified: "the certified combination from the card above" })[f.kind] || f.kind;
       const hasDetail = f.members.length && f.members[0].cost1k !== undefined;
+      // write the found combination as an explicit weighted vote, in the same affine
+      // form as the certified combinations: shares over members, total mass one.
+      let voteHTML;
+      if (f.kind === "certified" && r.minCert) {
+        voteHTML =
+          `<p class="xkv"><strong>Its weighted vote</strong> is the certified combination
+           extracted from the minimizing collection (details in the certified-combination
+           card). The affine weights:</p>${wtable(r.minCert)}
+           <div class="verdict pos">decision rule: ${r.minCert.rule === "plurality"
+             ? "largest share wins" : "the label whose share interval contains U = " + r.minCert.U}.</div>`;
+      } else {
+        let rows, rule;
+        if (f.kind === "vote") {
+          const w = 1 / f.members.length;
+          rows = f.members.map(m => ({ w, name: m.name, outputs: "as written" }));
+          rule = "largest share wins (a uniform plurality vote; the members' answers count equally)";
+        } else if (f.kind === "relabeled") {
+          rows = [{ w: 1, name: f.members[0].name,
+                    outputs: (f.maps && f.maps.length
+                      ? f.maps.map(x => `${esc(x.out)} → ${esc(x.to)}`).join(", ") + "; rest as written"
+                      : "as written") }];
+          rule = "all mass sits on one model, so the vote is just its answer after the relabeling";
+        } else {
+          rows = [{ w: 1, name: f.members[0].name, outputs: "as written" }];
+          rule = "all mass sits on one model, so the vote is just its answer, read as written";
+        }
+        voteHTML =
+          `<p class="xkv"><strong>Its weighted vote</strong>, in the same affine form as the
+           certified combinations (nonnegative shares over members, total mass one):</p>
+           <table><tr><th class="r">weight</th><th>model</th><th>outputs read</th></tr>
+           ${rows.map(v =>
+              `<tr><td class="num">${v.w.toFixed(3)}</td><td>${esc(v.name)}</td>
+               <td>${v.outputs}</td></tr>`).join("")}</table>
+           <div class="verdict pos">decision rule: ${rule}. In-sample error
+           <span class="num">${f.err.toFixed(4)}</span> against the frontier's
+           <span class="num">${r.alpha.toFixed(4)}</span>.</div>`;
+      }
       foundEl.innerHTML =
         `<h3><span class="dot" style="border-color:var(--magenta)"></span>Magenta &middot; the best combination found</h3>
          <p class="xkv">The search's best affordable combination here is ${kindTxt}: in-sample
          error <span class="num">${f.err.toFixed(4)}</span> against the frontier's
          <span class="num">${r.alpha.toFixed(4)}</span>, a found gap of
          ${(100 * fgap / 2).toFixed(2)} points. Support cost
-         <span class="num">$${fmt$(f.cost1k)}</span>/1k; the magenta star marks it at twice its
-         error${hasDetail ? ", and its members are the magenta triangles" : ""}.</p>
+         <span class="num">$${fmt$(f.cost1k)}</span>/1k; the magenta star (point-down) marks it at
+         twice its error${hasDetail ? ", and its members are the point-down magenta triangles" : ""}.</p>
          ${hasDetail
            ? `<table><tr><th>model</th><th class="r">$/1k</th><th class="r">error</th></tr>
               ${f.members.map(m =>
                  `<tr><td>${esc(m.name)}</td><td class="num">${fmt$(m.cost1k)}</td>
                   <td class="num">${m.err.toFixed(3)}</td></tr>`).join("")}</table>`
            : `<p class="xkv">${f.members.map(m => esc(m.name)).join(", ")}</p>`}
-         ${f.maps && f.maps.length
-           ? `<p class="xkv">Relabeling: ${f.maps.map(x =>
-                `${esc(x.out)} → ${esc(x.to)}`).join(", ")}; other outputs read as
-              written.</p>` : ""}`;
+         ${voteHTML}`;
     } else {
       foundEl.hidden = true;
       foundEl.innerHTML = "";
@@ -730,20 +784,6 @@ function initExplorer(root, DATA, opts) {
            <td class="num">${pct(m.errInside)}</td></tr>`).join("")}
        </table>${verdict}`;
     const certEl = root.querySelector('[data-card="cert"]');
-    const mapTxt = m => {
-      const ch = m.maps.filter(x => x.changed);
-      if (!ch.length) return "as written";
-      return ch.map(x => `${esc(x.out)} → ${esc(x.to)}`).join(", ")
-        + (m.maps.length > ch.length ? "; rest as written" : "");
-    };
-    const wtable = cc =>
-      `<table><tr><th class="r">weight</th><th>model</th><th>outputs read</th></tr>
-       ${cc.members.map(m =>
-          `<tr><td class="num">${m.weight.toFixed(3)}</td><td>${esc(m.model)}</td>
-           <td>${m.weight >= 1e-4 ? mapTxt(m) : "—"}</td></tr>`).join("")}
-       ${cc.consts.map(k =>
-          `<tr><td class="num">${k.weight.toFixed(3)}</td><td colspan="2">the constant answer ${esc(k.label)}</td></tr>`).join("")}
-       </table>`;
     const certBlock = (cc, who, starName) =>
       `<p class="xkv"${who.indexOf("greedy") >= 0 ? ' style="margin-top:10px"' : ""}><strong>From the ${who}</strong>: the dual
        construction yields nonnegative vote shares over relabeled members and constants, total
