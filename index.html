@@ -30,6 +30,14 @@
   ol.steps { padding-left: 22px; margin: 0 0 16px; }
   ol.steps li { margin-bottom: 14px; }
   ol.steps li::marker { font-weight: 600; color: var(--accent); }
+  ol.steps li { position: relative; padding-left: 32px; }
+  .rail { position: absolute; left: 2px; top: 5px; bottom: 5px; display: flex; gap: 5px;
+    align-items: stretch; }
+  .rail i { display: block; width: 0; border-left: 4px solid; }
+  .rail i.dash { border-left-style: dashed; }
+  .rail i.dot { border-left-style: dotted; border-left-width: 4px; }
+  .rail .glyph { display: flex; flex-direction: column; justify-content: space-around;
+    font-size: 13px; line-height: 1; }
   .math { font-family: var(--mono); font-size: 14.5px; background: var(--accent-soft);
           border-radius: 6px; padding: 12px 16px; margin: 18px 0; overflow-x: auto;
           color: var(--ink); }
@@ -157,8 +165,8 @@
 
   <h2>How each line was computed, step by step</h2>
   <p>Everything on this page comes from one procedure, repeated per market and per budget. In the
-  charts below, the horizontal axis is the buyer's budget and each line is one step of the
-  procedure. Here is exactly what was done.</p>
+  charts below, the horizontal axis is the buyer's budget, and each line is drawn in the margin
+  beside the step that computes it. Here is exactly what was done.</p>
   <ol class="steps">
     <li><strong>Rebuild the market as it stood on the date.</strong> Take every model released and
     on sale at the snapshot date, at that date's list prices, and compute its cost per query. Take
@@ -167,21 +175,21 @@
     API calls for the six live markets. An answer is one of the letters A to D, or "no parse" when
     the model's output contained no readable letter. We keep "no parse" as a fifth output symbol
     rather than discarding it; that choice matters later.</li>
-    <li><strong>The black line: twice the frontier error.</strong> Lay a grid of budgets over the
+    <li><span class="rail"><i style="border-color:var(--ink)"></i></span><strong>The black line: twice the frontier error.</strong> Lay a grid of budgets over the
     market's price range. At each budget B, the <em>frontier</em> is the most accurate single
     model whose per-query price is at most B; call its error rate &alpha;(B). The black line
     plots 2&alpha;(B). It is doubled because that is the size the theorem demands of the core:
     if no combination beats the frontier, a hard core of size at least 2&alpha;(B) must exist.
     (Why twice: the core must hold each model at fifty percent, so about half of it falls on
     questions the model gets right, and only the other half on its &alpha; of errors.)</li>
-    <li><strong>Pick the collection of models to test.</strong> At each budget we form the
+    <li><span class="rail"><span class="glyph" style="color:var(--beta)"><span>▲</span><span>▲</span></span></span><strong>Pick the collection of models to test.</strong> At each budget we form the
     <em>near-frontier affordable collection</em>: every model whose error is within one point of
     the best model at or below its own price (so, models that are honest value at their price,
     not junk), added cheapest first for as long as the collection's <em>combined</em> price still
     fits within B. This is a set of models one buyer could call together on the same query, for
     at most B. When you select a budget in the widget, these are the triangles, each drawn at its
     own price and twice its error.</li>
-    <li><strong>The light-blue line: the largest hard core &beta; of that collection.</strong>
+    <li><span class="rail"><i style="border-color:var(--beta)"></i><i class="dot" style="border-color:var(--aqua)"></i><i class="dash" style="border-color:var(--ochre)"></i></span><strong>The light-blue line: the largest hard core &beta; of that collection.</strong>
     Now the actual measurement. We look for a weighting of the benchmark: each question i gets a
     weight w<sub>i</sub> between 0 and 1 (so no question can be counted more than once, which
     forces the core to be spread out rather than piled on a few freak questions). The weighting
@@ -196,8 +204,8 @@
     practice the optimal weights come out almost entirely 0 or 1, so the witness is literally a
     list of questions; the green dotted line repeats the computation restricted to exact 0/1
     weights (built by rounding the weighting and repairing any violated constraint), and it costs
-    at most a third of a point on the historical markets.</li>
-    <li><strong>The dark-blue dashed line: the ceiling one model already forces.</strong> For
+    at most a third of a point on the historical markets. The ochre dashed line repeats it with the collection choice removed entirely: the certified exact minimum of β over every jointly affordable collection, computed as described just below.</li>
+    <li><span class="rail"><i class="dash" style="border-color:var(--navy)"></i><i class="dash" style="border-color:var(--red)"></i><i style="border-color:var(--violet)"></i></span><strong>The dark-blue dashed line: the ceiling one model already forces.</strong> For
     each member alone, apply its best fixed relabeling (chosen with hindsight) and count the
     errors that remain; call the smallest such error, over the collection's members, the best
     member's decoded error. No common core can be larger than twice that number: the core must
@@ -207,7 +215,7 @@
     step 4. The red dashed line is the same ceiling with no relabeling allowed (twice the best
     member's raw error), and the violet line is the share of questions every member answers
     wrong at once.</li>
-    <li><strong>Read the chart by comparing the lines.</strong> If the market really leaves no
+    <li><span class="rail"><i style="border-color:var(--arb)"></i><i style="border-color:var(--magenta)"></i><span class="glyph" style="color:var(--warm)"><span>★</span></span></span><strong>Read the chart by comparing the lines.</strong> If the market really leaves no
     arbitrage at B, light blue must reach black. Where it falls short (the orange shading), the
     shortfall is a <em>certificate</em>: the proof behind step 4 is constructive, so a gap of d
     guarantees that some fixed lookup-table combination of the collection beats the best
@@ -220,7 +228,7 @@
     the best combination the search actually finds at each budget (every model raw and relabeled,
     plus plurality votes over affordable subsets: exhaustive over every subset on small menus and
     over every subset of up to five near-frontier models, with sampled larger supports elsewhere),
-    so the distance between black and orange is twice the found arbitrage. Orange can sit below
+    so the distance between black and orange is twice the found arbitrage; the magenta line plots that difference directly. Orange can sit below
     black even where light blue reaches black: arbitrage without a certificate, the
     one-directionality made visible.</li>
   </ol>
@@ -409,15 +417,17 @@ function initExplorer(root, DATA, opts) {
     { key: "ceil", label: "ceiling: best member relabeled, ×2", c: "--navy", st: "dashed", dash: "6 5", w: 2.4 },
     { key: "ceilRaw", label: "ceiling without relabeling", c: "--red", st: "dashed", dash: "8 5", w: 2.6 },
     { key: "allWrong", label: "all members wrong", c: "--violet", st: "solid", dash: null, w: 2.8 }]);
-  const vis = {};
-  SERIES.forEach(s => { vis[s.key] = true; });
+  // line visibility is shared page-wide, so toggles persist across market tabs
+  window.__xwVis = window.__xwVis || {};
+  const vis = window.__xwVis;
+  SERIES.forEach(s => { if (!(s.key in vis)) vis[s.key] = true; });
   const PAINT = ["ceilRaw", "allWrong", "gap2", "twoAlpha", "twoAlphaMix", "arb2",
                  "beta", "ceil", "betaInt", "minCore"];
   const val = (r, key) => key === "gap2" ? r.twoAlpha - r.arb2 : r[key];
   const hasCert = bs.some(r => r.cert);
   root.innerHTML =
     `<div class="xw-legend">${SERIES.map(s =>
-       `<span class="lgd" data-key="${s.key}" role="button" tabindex="0"
+       `<span class="lgd${vis[s.key] ? "" : " off"}" data-key="${s.key}" role="button" tabindex="0"
          title="click to show or hide this line"><span class="sw"
          style="border-color:var(${s.c}); border-top-style:${s.st}"></span>${s.label}</span>`).join("")}
      <span><span style="color:var(--beta); margin-right:5px; font-size:12px; vertical-align:middle;">▲</span>the selected collection's members, at twice their error</span>
