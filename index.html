@@ -309,22 +309,17 @@
 
   <h2>The four historical markets at a glance</h2>
   <figure>
-    <img src="fig_mass_curves_helm.png" alt="Four panels, one per historical market from October 2023 to January 2025, showing twice the frontier error, the largest hard core, the single-member ceilings with and without relabeling, the 0/1-subset core, and the all-wrong set across budgets. The core and the relabeled ceiling coincide everywhere.">
-    <figcaption><b>The largest hard core, by budget, in the four historical markets</b> (14,038
-    MMLU questions each). Black: twice the frontier error, from step 2. Light blue: the max hard core size &beta; of the
-    greedy near-frontier collection, from step 4. Green dotted: a certified 0/1 core of the greedy
-    collection, found by rounding (within a third of a point of the LP optimum on these markets).
-    Dark blue dashed: the greedy collection's single-member ceiling from step 5; red
-    dashed: the same without relabeling; violet: the share of questions every greedy member gets
-    wrong at once. The ochre minimum equals the best affordable model's relabeled core in every market at every budget, and the light-blue example sits exactly on its dark-blue ceiling, so no
-    collective advantage is ever certified; the shading marks every region where the lower of the two core
-    lines falls short of black, certifying a frontier-beating combination, and in every real
-    market that certificate turned out to be one model's mishandled answer format. The <b>orange line</b> is twice the error of the best
-    combination the search finds at each budget (in sample), so black minus orange is twice the
-    found arbitrage, whether or not the core test certifies it; the <b>magenta line</b> plots that
-    difference directly. The <b>ochre dashed line</b> is the certified exact minimum of &beta;
-    over <em>all</em> jointly affordable collections, not just the constructed one, so no
-    collection choice is left in it.</figcaption>
+    <img src="fig_mass_curves_helm.png" alt="Four panels, one per historical market from October 2023 to January 2025, showing twice the frontier error, the certified minimum hard core over all affordable collections, twice the found arbitrage gap, and the all-wrong share, across budgets. The minimum rides the frontier line except at the 2023 and April 2024 budgets where relabeling fixes exist.">
+    <figcaption><b>The four historical markets at a glance</b> (14,038 MMLU questions
+    each). Black: twice the frontier error, 2&alpha;(B), from step 2. Ochre dashed: the certified
+    exact minimum of &beta; over all jointly affordable collections, from step 4; the shading
+    marks where it falls short of black, certifying a frontier-beating combination, and in every
+    real market that certificate turned out to be one model&#39;s mishandled answer format, gone
+    by 2025. Magenta: twice the found arbitrage gap, the search&#39;s floor on what combining
+    actually buys. Violet: the share of questions every member of the greedy worked example gets
+    wrong at once, far smaller than any core. The remaining layers &mdash; the worked
+    example&#39;s core and 0/1 subset, the two ceilings, and the orange best-found line &mdash;
+    live in the interactive widget below, toggleable per line.</figcaption>
   </figure>
 
   <h2>Explore all ten markets</h2>
