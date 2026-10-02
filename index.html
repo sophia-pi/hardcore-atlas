@@ -191,14 +191,14 @@
     if no combination beats the frontier, a hard core of size at least 2&alpha;(B) must exist.
     (Why twice: the core must hold each model at fifty percent, so about half of it falls on
     questions the model gets right, and only the other half on its &alpha; of errors.)</li>
-    <li><span class="rail"><span class="glyph" style="color:var(--beta)"><span>▲</span><span>▲</span></span></span><strong>Pick the collection of models to test.</strong> At each budget we form the
+    <li><span class="rail"><span class="glyph" style="color:var(--beta)"><span>▲</span><span>▲</span></span></span><strong>Pick the collections to test.</strong> The theorem binds every jointly affordable collection at once, and the ochre line of the next step minimizes over all of them. For per-collection detail the pages also carry one concrete worked example, hidden behind the legend toggles by default: at each budget we form the
     <em>near-frontier affordable collection</em>: every model whose error is within one point of
     the best model at or below its own price (so, models that are honest value at their price,
     not junk), added cheapest first for as long as the collection's <em>combined</em> price still
     fits within B. This is a set of models one buyer could call together on the same query, for
     at most B. When you select a budget in the widget, these are the triangles, each drawn at its
     own price and twice its error.</li>
-    <li><span class="rail"><i style="border-color:var(--beta)"></i><i class="dot" style="border-color:var(--aqua)"></i><i class="dash" style="border-color:var(--ochre)"></i></span><strong>The light-blue line: the largest hard core &beta; of that collection.</strong>
+    <li><span class="rail"><i class="dash" style="border-color:var(--ochre)"></i><i style="border-color:var(--beta)"></i><i class="dot" style="border-color:var(--aqua)"></i></span><strong>The hard core of a collection, and the ochre line: its minimum over all of them.</strong>
     Now the actual measurement. We look for a weighting of the benchmark: each question i gets a
     weight w<sub>i</sub> between 0 and 1 (so no question can be counted more than once, which
     forces the core to be spread out rather than piled on a few freak questions). The weighting
@@ -211,9 +211,12 @@
     of the benchmark, is &beta;, the light-blue line. A larger total weight also means a more
     spread-out core once normalised, so "largest" and "smoothest" are the same thing here. In
     practice the optimal weights come out almost entirely 0 or 1, so the witness is literally a
-    list of questions; the green dotted line repeats the computation restricted to exact 0/1
-    weights (built by rounding the weighting and repairing any violated constraint), and it costs
-    at most a third of a point on the historical markets. The ochre dashed line repeats it with the collection choice removed entirely: the certified exact minimum of β over every jointly affordable collection, computed as described just below.</li>
+    list of questions. The headline is the ochre dashed line: the certified exact minimum of this
+    quantity over every jointly affordable collection, computed as described just below, so no
+    collection choice is left in it. The light-blue line shows the same quantity for the worked
+    example alone, and the green dotted line repeats that with exact 0/1 weights (built by
+    rounding and repairing; at most a third of a point away on the historical markets); both are
+    hidden by default.</li>
     <li><span class="rail"><i class="dash" style="border-color:var(--navy)"></i><i class="dash" style="border-color:var(--red)"></i><i style="border-color:var(--violet)"></i></span><strong>The dark-blue dashed line: the ceiling one model already forces.</strong> For
     each member alone, apply its best fixed relabeling (chosen with hindsight) and count the
     errors that remain; call the smallest such error, over the collection's members, the best
@@ -225,25 +228,25 @@
     member's raw error), and the violet line is the share of questions every member answers
     wrong at once.</li>
     <li><span class="rail"><i style="border-color:var(--arb)"></i><i style="border-color:var(--magenta)"></i><span class="glyph" style="color:var(--warm)"><span>★</span></span></span><strong>Read the chart by comparing the lines.</strong> If the market really leaves no
-    arbitrage at B, light blue must reach black. Where it falls short (the orange shading), the
+    arbitrage at B, the ochre minimum must reach black, and with it every collection's β. Where ochre falls short (the orange shading), the
     shortfall is a <em>certificate</em>: the proof behind step 4 is constructive, so a gap of d
-    guarantees that some fixed lookup-table combination of the collection beats the best
+    guarantees that some fixed lookup-table combination of the minimizing collection beats the best
     affordable single model by at least d/2 accuracy points on these questions. In the widgets,
     the certified combination itself is then extracted from the linear program's dual and shown:
     its explicit affine weights over the collection, the decision rule, and its verified error,
-    starred on the chart at its support cost. And where light blue sits below the dark-blue
-    ceiling, the members are certified as genuinely complementary; where the two coincide, the
-    test certifies no complementarity at all. Finally, the orange line plots twice the error of
+    starred on the chart at its support cost. (With the worked example toggled on: where its
+    light-blue core sits below its dark-blue ceiling, its members are certified as genuinely
+    complementary; where the two coincide, the test certifies no complementarity at all.) Finally, the orange line plots twice the error of
     the best combination the search actually finds at each budget (every model raw and relabeled,
     plus plurality votes over affordable subsets: exhaustive over every subset on small menus and
     over every subset of up to five near-frontier models, with sampled larger supports elsewhere),
     so the distance between black and orange is twice the found arbitrage; the magenta line plots that difference directly. The certified combinations from both the greedy and the minimizing collections are folded into this line; even so it remains a lower bound on the true arbitrage, because the exact best weighted vote under a support-cost constraint is a combinatorial optimization no search here solves. Orange can sit below
-    black even where light blue reaches black: arbitrage without a certificate, the
+    black even where the ochre minimum reaches black: arbitrage without a certificate, the
     one-directionality made visible.</li>
   </ol>
   <p>In one line, the sandwich the curves trace out:</p>
   <div class="math">2 &times; (best combination's error on G) &nbsp;&le;&nbsp; &beta; &nbsp;&le;&nbsp; 2 &times; (best single member's decoded error)</div>
-  <p>with the prediction being &beta; &ge; 2&alpha;(B) wherever the market is efficient at B. One
+  <p>with the prediction being &beta; &ge; 2&alpha;(B) for every affordable collection wherever the market is efficient; equivalently, the ochre minimum must stay at or above black. One
   caution before the charts: the certificate is one-directional. Light blue below black proves a
   frontier-beating combination exists; light blue at or above black proves nothing either way.</p>
   <p>One more line removes the last judgment call. The light-blue core belongs to one constructed
@@ -307,7 +310,7 @@
     collection, found by rounding (within a third of a point of the LP optimum on these markets).
     Dark blue dashed: the greedy collection's single-member ceiling from step 5; red
     dashed: the same without relabeling; violet: the share of questions every greedy member gets
-    wrong at once. The light-blue line sits on the dark-blue dashes in every market at every budget, so no
+    wrong at once. The ochre minimum equals the best affordable model's relabeled core in every market at every budget, and the light-blue example sits exactly on its dark-blue ceiling, so no
     collective advantage is ever certified; the shading marks every region where the lower of the two core
     lines falls short of black, certifying a frontier-beating combination, and in every real
     market that certificate turned out to be one model's mishandled answer format. The <b>orange line</b> is twice the error of the best
@@ -322,9 +325,9 @@
   <p>Pick a market from the tabs, earliest to latest: four historical HELM markets (14,038
   questions) and six live markets (250 questions, our own API calls). Then click a budget on the
   chart, or focus the widget and step with the arrow keys. The scrolling panel shows the frontier
-  model, the collection (the triangles), the certified combination where one exists (the star,
-  with its explicit affine weights), the relabeling behind the ceiling, and the hard core itself:
-  its size, its composition, and where it lives by subject. The orange line tracks the best
+  model, the minimizing collection (the ochre triangles), the certified combination where one
+  exists (the star, with its explicit affine weights), and, when toggled on, the worked example
+  with its ceiling relabeling and its core's size, composition, and subjects. The orange line tracks the best
   combination the search finds at every budget, certified or not, so the found arbitrage is
   always visible. Where the ochre minimum dips below black, the minimizing collection's members and its own certified combination are drawn in ochre, triangles and star. Each market opens at its own largest-deficit budget. The greedy collection's layers (light blue, green, the ceilings, violet, and its triangles and warm star) are hidden by default, since the ochre minimum already accounts for every affordable collection; click their legend entries to bring them back. Two reading notes: on the live tabs the 250-question sample makes the
   core's subject composition unstable, so read those for the sizes; and a "certified combination"
@@ -333,8 +336,10 @@
   <div class="xw" id="w1" tabindex="0" aria-label="Interactive chart: the hard core of every market, budget by budget. Use the tabs to switch market and the left and right arrow keys to change the selected budget."></div>
 
   <h2>Why the light-blue line never dips below the dark-blue one</h2>
-  <p>Clicking around the markets above, one regularity stands out: the light-blue core always sits
-  exactly on the dark-blue ceiling, never below it. That is not an artifact of the computation. A
+  <p>Clicking around the markets above, one regularity stands out: the ochre minimum always equals
+  the best affordable model's relabeled core, and, with the greedy layers toggled on, every
+  collection's light-blue core sits exactly on its dark-blue ceiling, never below it. That is
+  not an artifact of the computation. A
   ceiling gap is a demanding condition. To reach the ceiling, the program must bring the
   collection's <em>best</em> member exactly to chance: take all of its errors plus an equal mass
   of questions it answers correctly, chosen so that every <em>other</em> member is held at half
@@ -384,20 +389,19 @@
   22% slice that the other two get right. A majority vote of the three is wrong only on the
   shared 8%: error 0.080 for $1.50 per thousand, beating every model on the menu, including the
   flagship at forty times the price.</p>
-  <p>The widget shows what the test does with it. Once all three specialists fit inside the
-  collection (from $3 per thousand on), the light-blue line collapses to 0.32, far below both the
-  black line and the dark-blue ceiling at 0.59. That gap between light and dark blue, 27 points
-  of collective margin, is the picture that appeared nowhere in the ten real markets: the test
-  certifying that members genuinely cover for one another. The certified-combination card shows
+  <p>The widget shows what the test does with it. The moment the trio is jointly affordable,
+  $1.53 per thousand, the ochre minimum collapses to 0.32, far below the black line at 0.59.
+  Toggle the greedy layers on and the per-collection picture appears too: from $3 the light-blue
+  line falls 27 points below its dark-blue ceiling, the certified collective margin that showed
+  up nowhere in the ten real markets, the test certifying that members genuinely cover for one
+  another. The certified-combination card shows
   the extracted rule, equal one-third weights on three members, and the star sits far beneath
   every model on the menu. The orange line makes the inefficiency itself visible: from $1.50 per
   thousand on it sits at 2 &times; 0.080 = 0.16, below the black line at every budget, including
-  the budgets where nothing is certified. Two honest wrinkles are visible too. At $1.53 the three specialists
-  are jointly affordable, yet nothing fires, because the cheapest-first membership rule fills
-  tiny and value before a second specialist fits (the ochre exact-minimum line has no such blind
-  spot: it drops to 0.32 right at $1.53, with the trio itself as the certified minimizing
-  collection); the miss belongs to the collection rule, not
-  the test. And from $46 on, where premium and flagship pull the frontier down to meet 0.32, the
+  the budgets where nothing is certified. Two honest wrinkles are visible too. The worked example's light-blue layer only collapses
+  from $3, because its cheapest-first fill spends the budget on tiny and value before a second
+  specialist fits; that blind spot belongs to the example's membership rule, and the ochre
+  minimum does not share it. And from $46 on, where premium and flagship pull the frontier down to meet 0.32, the
   deficit returns to zero even though the vote still beats the frontier (0.080 against 0.110):
   the certificate is one-directional, exactly as stated above.</p>
   <div class="xw" id="w2" tabindex="0" aria-label="Interactive chart: a synthetic market designed to violate the hypothesis, with three complementary specialist models. Use left and right arrow keys to change the selected budget."></div>
