@@ -410,7 +410,7 @@ function initExplorer(root, DATA, opts) {
       c: "--magenta", st: "solid", dash: null, w: 2.2 },
     { key: "beta", label: "max hard core size, β (greedy collection)", c: "--beta", st: "solid", dash: null, w: 3.6 }])
     .concat(bs[0].minCore !== undefined
-      ? [{ key: "minCore", label: "min hard core size (all affordable collections)",
+      ? [{ key: "minCore", label: "min of β over all affordable collections",
            c: "--ochre", st: "dashed", dash: "12 5", w: 2.4 }] : [])
     .concat([
     { key: "betaInt", label: "largest all-0/1 core", c: "--aqua", st: "dotted", dash: "2 4.5", w: 2.6 },
@@ -558,7 +558,7 @@ function initExplorer(root, DATA, opts) {
                ["twice the arbitrage gap (black minus orange)", r.twoAlpha - r.arb2, "--magenta", "solid"],
                ["max hard core size, β (greedy collection)", r.beta, "--beta", "solid"]])
       .concat(r.minCore !== undefined
-        ? [["min hard core size (all affordable collections)", r.minCore, "--ochre", "dashed"]] : [])
+        ? [["min of β over all affordable collections", r.minCore, "--ochre", "dashed"]] : [])
       .concat([
                ["largest all-0/1 core (subset)", r.betaInt, "--aqua", "dotted"],
                ["ceiling: best member relabeled, ×2", r.ceil, "--navy", "dashed"],
