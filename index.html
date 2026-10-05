@@ -11,7 +11,7 @@
     --muted: #8b8880; --hairline: #e3e1d8; --grid: #eceae2;
     --accent: #1c5cab; --accent-soft: #e3edf9; --warm: #b34a1e; --warm-soft: #f7e8df;
     --beta: #5598e7; --navy: #0d366b; --red: #d03b3b; --violet: #4a3aa7; --aqua: #0f9166;
-    --arb: #d95926; --magenta: #c3457c; --ochre: #8a6d00;
+    --arb: #d95926; --magenta: #c3457c; --ochre: #8a6d00; --rust: #7a2e21;
     --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
   /* This page deliberately commits to a single light look for legibility. */
@@ -214,7 +214,7 @@
     list of questions. The headline is the ochre dashed line: the certified exact minimum of this
     quantity over every jointly affordable collection, computed as described just below, so no
     collection choice is left in it. The light-blue line shows the same quantity for the worked
-    example alone, and the green dotted line repeats it with the extra restriction that every question is fully in or fully out of the core (weights exactly 0 or 1), so the core is a plain subset of questions. That restriction turns the linear program into an integer program; it is still solved exactly, by a branch-and-bound over the same constraints, and forcing whole questions turns out to cost almost nothing. Both are hidden by default.</li>
+    example alone, and the green dotted line repeats it with the extra restriction that every question is fully in or fully out of the core (weights exactly 0 or 1), so the core is a plain subset of questions. That restriction turns the linear program into an integer program; it is still solved exactly, by a branch-and-bound over the same constraints, and at every budget of every market the answer comes out equal to the fractional maximum rounded to whole questions. Forcing whole questions therefore costs nothing, and on the charts the green dotted line lies exactly on the light-blue one. Both are hidden by default.</li>
     <li><span class="rail"><i class="dash" style="border-color:var(--navy)"></i><i class="dash" style="border-color:var(--red)"></i><i style="border-color:var(--violet)"></i></span><strong>The dark-blue dashed line: the ceiling one model already forces.</strong> For
     each member alone, apply its best fixed relabeling (chosen with hindsight) and count the
     errors that remain; call the smallest such error, over the collection's members, the best
@@ -222,7 +222,7 @@
     hold that member at fifty percent, so at least half the core's weight must sit on that
     member's remaining errors, and there are only so many of them. The dark-blue dashed line
     plots this ceiling. It needs no optimisation, only counting, and is computed independently of
-    step 4. The red dashed line is the same ceiling computed with no relabeling allowed: every model is read exactly as written, and an answer that did not parse simply counts as wrong (twice the best member&#39;s raw error). The red dotted line is the whole core of step 4 recomputed under that same no-relabeling rule, which removes the 1,024 relabeling requirements per model and leaves one requirement per member; with fewer requirements more weightings qualify, so this core can only be larger than the light-blue one. It is still one linear program, solved exactly. The violet line is the share of questions every member answers wrong at once.</li>
+    step 4. The red dashed line is the same ceiling computed with no relabeling allowed: every model is read exactly as written, and an answer that did not parse simply counts as wrong (twice the best member&#39;s raw error). The brick-red dotted line is the whole core of step 4 recomputed under that same no-relabeling rule, which removes the 1,024 relabeling requirements per model and leaves one requirement per member; with fewer requirements more weightings qualify, so this core can only be larger than the light-blue one. It is still one linear program, solved exactly. In every real market it reaches the raw ceiling exactly, so the brick-red dotted line lies on the red dashed one; only the designed market separates the two, by up to 27 points. The violet line is the share of questions every member answers wrong at once.</li>
     <li><span class="rail"><i style="border-color:var(--arb)"></i><i style="border-color:var(--magenta)"></i><span class="glyph" style="color:var(--warm)"><span>★</span></span></span><strong>Read the chart by comparing the lines.</strong> If the market really leaves no
     arbitrage at B, the ochre minimum must reach black, and with it every collection's β. Where ochre falls short (the orange shading), the
     shortfall is a <em>certificate</em>: the proof behind step 4 is constructive, so a gap of d
@@ -602,7 +602,7 @@ function initExplorer(root, DATA, opts) {
     { key: "ceilRaw", label: "ceiling without relabeling (greedy collection)", c: "--red", st: "dashed", dash: "8 5", w: 2.6 }])
     .concat(bs[0].rawCore !== undefined
       ? [{ key: "rawCore", label: "core without relabeling (greedy collection)",
-           c: "--red", st: "dotted", dash: "2 4.5", w: 2.2 }] : [])
+           c: "--rust", st: "dotted", dash: "2 4.5", w: 2.2 }] : [])
     .concat([
     { key: "allWrong", label: "all members wrong (greedy collection)", c: "--violet", st: "solid", dash: null, w: 2.8 }]);
   // line visibility is shared page-wide, so toggles persist across market tabs.
@@ -775,7 +775,7 @@ function initExplorer(root, DATA, opts) {
                ["ceiling: best member relabeled, ×2 (greedy)", r.ceil, "--navy", "dashed"],
                ["ceiling without relabeling (greedy)", r.ceilRaw, "--red", "dashed"]])
       .concat(r.rawCore !== undefined
-        ? [["core without relabeling (greedy)", r.rawCore, "--red", "dotted"]] : [])
+        ? [["core without relabeling (greedy)", r.rawCore, "--rust", "dotted"]] : [])
       .concat([
                ["all members wrong (greedy)", r.allWrong, "--violet", "solid"]]);
     root.querySelector('[data-card="budget"]').innerHTML =
@@ -968,8 +968,9 @@ function initExplorer(root, DATA, opts) {
        (raw <span class="num">${b.err.toFixed(4)}</span>). No common core can exceed twice that:
        <span class="num">${r.ceil.toFixed(4)}</span>. Without relabeling the ceiling would be
        <span class="num">${r.ceilRaw.toFixed(4)}</span> (red dashed)${r.rawCore !== undefined
-         ? `, and the core computed with every member read as written (red dotted) reaches
-       <span class="num">${r.rawCore.toFixed(4)}</span>` : ""}.</p>
+         ? `, and the core computed with every member read as written (brick-red dotted) reaches
+       <span class="num">${r.rawCore.toFixed(4)}</span>${Math.abs(r.rawCore - r.ceilRaw) < 5e-4
+         ? ", exactly that ceiling, so the two lines lie on top of each other here" : ""}` : ""}.</p>
        <table><tr><th>model says</th><th class="r">n</th><th>read as</th><th class="r">right before &rarr; after</th></tr>
        ${C.remap.map(m =>
           `<tr class="remaprow${m.changed ? " changed" : ""}"><td>${esc(m.out)}</td><td class="num">${m.n.toLocaleString()}</td>
@@ -984,7 +985,10 @@ function initExplorer(root, DATA, opts) {
        <p class="xkv"><span class="num">${C.nCore.toLocaleString()}</span> questions
        (${pct(C.nCore / DATA.n)} of the benchmark). Forced to all-or-nothing 0/1 weights (green
        dotted), the largest plain subset${C.int01Proven === false ? " found" : ", computed exactly,"}
-       has <span class="num">${C.nCore01.toLocaleString()}</span> questions.
+       has <span class="num">${C.nCore01.toLocaleString()}</span> questions${
+         Math.abs(r.beta - r.betaInt) < 5e-4
+         ? " &mdash; the full core rounded to whole questions, so the green dotted line lies exactly on the light-blue one"
+         : ""}.
        Every member wrong at once (violet): <span class="num">${C.nAllWrong.toLocaleString()}</span>
        (${pct(C.nAllWrong / DATA.n)}).</p>
        <div class="minibar">
