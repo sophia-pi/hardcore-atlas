@@ -407,6 +407,55 @@
   the certificate is one-directional, exactly as stated above.</p>
   <div class="xw" id="w2" tabindex="0" aria-label="Interactive chart: a synthetic market designed to violate the hypothesis, with three complementary specialist models. Use left and right arrow keys to change the selected budget."></div>
 
+  <h2>Does the price convention matter? A tokenizer check</h2>
+  <p>Every dollar figure above rests on one assumption. Providers price tokens, not questions, so
+  each model's per-query cost is its list price applied to a nominal query of 700 input tokens
+  (the 5-shot prompt) plus one output token, the same for every model. Real tokenizers disagree
+  about how long the same text is, and cost enters this experiment only through comparisons:
+  which model is the most accurate you can afford, which collections are jointly affordable,
+  where the certified gaps sit. A per-model error in token counts could in principle flip any of
+  those at a budget boundary. So it was measured.</p>
+  <p>The 5-shot MMLU prompt was re-tokenized under seventeen real tokenizers: OpenAI's two
+  (exact, via tiktoken) and the published tokenizer files of the Llama, Mistral, Qwen, Yi,
+  DeepSeek, Phi, Gemma, OLMo, Jamba, Solar and Arctic families. Vendors with no public tokenizer
+  at all (Anthropic, Google's API models, Amazon Nova, Cohere) were swept across the whole range
+  of the measured ones, moved together, as a worst case. Every tokenizer lands between 540 and
+  643 tokens:</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>tokenizer</th><th class="num">mean tokens</th><th>tokenizer</th><th class="num">mean tokens</th></tr>
+    <tr><td>DeepSeek V3</td><td class="num">540</td><td>DeepSeek LLM</td><td class="num">581</td></tr>
+    <tr><td>OpenAI o200k (GPT-4o)</td><td class="num">544</td><td>Jamba</td><td class="num">586</td></tr>
+    <tr><td>OpenAI cl100k (GPT-3.5/4)</td><td class="num">547</td><td>Yi</td><td class="num">595</td></tr>
+    <tr><td>Llama 3.x</td><td class="num">548</td><td>Mistral v1 / Mixtral</td><td class="num">629</td></tr>
+    <tr><td>Qwen 1.5/2/2.5</td><td class="num">557</td><td>Phi-3 medium</td><td class="num">642</td></tr>
+    <tr><td>Mistral Nemo</td><td class="num">558</td><td>Solar</td><td class="num">642</td></tr>
+    <tr><td>Gemma</td><td class="num">563</td><td>Llama 2</td><td class="num">643</td></tr>
+    <tr><td>OLMo</td><td class="num">564</td><td>Arctic</td><td class="num">643</td></tr>
+    <tr><td>Phi-2</td><td class="num">566</td><td><em>the nominal convention</em></td><td class="num">700</td></tr>
+  </table>
+  </div>
+  <p>Two consequences, one cosmetic and one structural. Cosmetically, the nominal 700 overstates
+  every model's cost by roughly 10 to 25 percent, so the dollar labels throughout are a little
+  high; a uniform overestimate slides every chart along its log axis and changes no comparison.
+  The structural question is the spread <em>between</em> models, about plus or minus nine
+  percent, and the scale-free comparison answers it. With per-model costs rebuilt from the
+  measured counts, October 2023 and January 2025 are identical in the frontier sequence, the
+  certified-gap pairs and the greedy-collection sequence, even with the unmeasured vendors
+  pushed to either extreme of the bracket. In April and July 2024 a few near-tied cheap models
+  trade brief frontier segments (qwen1.5-7b picks one up; gemma-7b's and llama-3-8b's short
+  segments pass to phi-3-small), and the worked example's membership shifts at one or two
+  budgets, which the ochre minimum, defined over all collections at once, does not care about.
+  Every certified gap in every market remains the same single model's relabel fix. And the core
+  sizes and ceilings involve no prices at all, so they cannot move.</p>
+  <p class="aside">Fine print: the prompts are reconstructed in HELM's format from a 250-question
+  draw, since only token statistics matter; a same-family tokenizer stands in for API models
+  whose exact tokenizer is unpublished (for instance mistral-large priced with the v0.1
+  tokenizer); and the bracketed vendors move together, so flips between two bracketed vendors
+  are not exercised, though their price differences dwarf the bracket. Script:
+  <code>src/tokenizer_sensitivity.py</code>; per-model counts and per-market outcomes in
+  <code>results/hardcore_exact/tokenizer_sensitivity.csv</code>.</p>
+
   <h2>What to take away</h2>
   <p>Across ten real markets and 384 collections of jointly affordable models, the hard core
   always exists, is always exactly as large as the theory demands, and is always exactly as large
