@@ -377,6 +377,78 @@
   predicts you will never observe one. So the two dials that create a ceiling gap are low error
   overlap and near-equal accuracies. The market below turns both, on purpose.</p>
 
+  <h2>Why the search finds combinations the test never certifies</h2>
+  <p>Two facts from the charts sit together oddly. In most markets there are budgets where the
+  orange line is below the black one: the search finds a combination, often a genuine vote over
+  several models rather than a relabeling of one, that makes fewer errors on the benchmark than
+  the frontier model does. Yet the ochre line, the certificate, only ever dips below black where
+  the winning trick is a relabeling of a single model's outputs. The test and the search look at
+  the same models answering the same questions. Why does one see arbitrage the other never does?</p>
+  <p>Because they ask different questions. The search asks: counted over all 14,038 questions,
+  does the combination make fewer errors than the frontier model? The core asks something much
+  harder. Recall how the core is computed: the program may put more weight on some questions and
+  less on others, and the core is large if there is <em>some</em> way of weighting the questions
+  under which every member of the collection does no better than a coin flip. Turned around,
+  a combination only shrinks the core, and so only produces a certificate, if it stays better
+  than chance under <em>every</em> weighting the program could pick, including the most hostile
+  one. The most hostile weighting is easy to describe: put the weight on the questions the
+  frontier model itself gets wrong. If the combination is no better than a blind guess on those
+  questions, the program piles the weight exactly there, every member is held at a coin flip,
+  and the core stays at full size no matter how well the combination does everywhere else.</p>
+  <p>So the question becomes concrete: on which questions do the found combinations actually
+  win? Split the benchmark in two, the questions the frontier model gets wrong and the questions
+  it gets right, and account for the combination's advantage across the two halves. In January
+  2025 at $5.62 per 1,000 queries, for example, the frontier is claude-3-5-sonnet, wrong on
+  1,735 of the 14,038 questions (12.4 percent), and the search finds a five-model vote beating
+  it by 0.56 points:</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>found combination</th><th class="num">fixes, on questions the frontier gets wrong</th>
+    <th class="num">new errors, on questions the frontier gets right</th><th class="num">net gain</th>
+    <th class="num">right on the frontier&#39;s errors (blind guessing: 25%)</th></tr>
+    <tr><td>Jan 2025, five-model vote at $5.62/1k</td><td class="num">+2.59 pts</td>
+    <td class="num">&minus;2.03 pts</td><td class="num">+0.56 pts</td><td class="num">20.9%</td></tr>
+    <tr><td>Jan 2025, three-model vote at $1.05/1k</td><td class="num">+2.61 pts</td>
+    <td class="num">&minus;2.38 pts</td><td class="num">+0.24 pts</td><td class="num">19.7%</td></tr>
+    <tr><td>the designed market&#39;s specialist trio at $1.53/1k (below)</td><td class="num">+21.50 pts</td>
+    <td class="num">&minus;0.00 pts</td><td class="num">+21.50 pts</td><td class="num">72.9%</td></tr>
+  </table>
+  </div>
+  <p>Read the last column first. On the questions the frontier model gets wrong, the real
+  markets&#39; found votes are right about 20 percent of the time, <em>less</em> than the 25
+  percent a blind guess among four choices would score (on 39 percent of those questions, every
+  one of the five members is wrong at once). Their half-point advantage is a bookkeeping surplus
+  over the whole benchmark: they fix a modest number of the frontier&#39;s mistakes and give most
+  of that back as new mistakes on questions the frontier had right. An advantage of that shape
+  has no defense against a hostile weighting. Concentrate the weight on the frontier&#39;s errors
+  and the vote, like each of its members, sits at guessing level; the core stays at its ceiling;
+  nothing is certified. The designed market&#39;s trio has the opposite shape: right on 73
+  percent of the questions its frontier gets wrong, at no cost elsewhere. There is no weighting
+  of questions under which that trio is held to a coin flip, so its core collapses and the
+  certificate fires.</p>
+  <p>This also sharpens what &ldquo;the models&#39; skills are nested&rdquo; means on this page.
+  Taken literally, nesting would say: every question the frontier model gets wrong, every
+  cheaper model also gets wrong. If that were exactly true, no combination could ever beat the
+  frontier and the orange line would never sit below black at all. Real markets are not quite
+  that: on the questions the frontier gets <em>right</em>, the other models make scattered,
+  partly different mistakes, and that disagreement is what the found votes harvest, worth half a
+  point to a point and a half when the combination is picked in hindsight. But on the questions
+  the frontier gets <em>wrong</em>, the mistakes really are close to nested: the members are
+  mostly wrong together, and no vote among them beats blind guessing. The core test asks its
+  question exactly on those questions, which is why it certifies the relabeling fixes (a
+  relabeling does help on the frontier&#39;s own errors: the model knew the answer and mangled
+  the format) and never the votes. The decorrelation counterfactual above is the same fact run
+  backwards: keep every model&#39;s error rate, scatter which questions each one misses at
+  random, and votes beat guessing on the frontier&#39;s errors easily; the certificates the test
+  would then issue are worth 12 to 21 points.</p>
+  <p class="aside">Two cautions. The found combinations are scored on the same questions the
+  search used to choose them, so part of their small advantage is selection luck; the main
+  audit&#39;s cross-fitted numbers are the fair judge of what survives on fresh questions. And
+  some of the questions every model gets wrong are plausibly mislabeled or genuinely ambiguous;
+  no combination of models can fix those, and they prop up every core. Numbers:
+  <code>src/found_vs_certified.py</code>, written to
+  <code>results/hardcore_exact/found_vs_certified.csv</code>.</p>
+
   <h2>A market built to violate the hypothesis</h2>
   <p>Every market above is real, and the test never certified any collective advantage: the
   light-blue line never once dipped below the dark-blue ceiling. A fair worry is that the test is
