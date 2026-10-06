@@ -263,7 +263,7 @@
     solid <em>magenta line</em> plots that difference directly. The dotted magenta line repeats
     it with relabeling forbidden: raw single models and plurality votes only, an unparsed answer
     counted as wrong; where solid magenta is positive but dotted magenta sits at zero,
-    everything the search found was an answer-format fix. Both are measured in hindsight on the
+    everything the search found was an answer-format fix. Both gaps are also painted as full-height column washes: solid magenta wherever the found gap is positive, striped magenta wherever it survives with relabeling forbidden, darker for larger gaps, so the arbitrage budgets can be spotted without reading the lines. Both are measured in hindsight on the
     same questions the search used, and both are lower bounds on the true arbitrage, because the
     exact best weighted vote under a support-cost constraint is a combinatorial optimization no
     search here solves. Orange can sit below black even where the ochre minimum reaches black:
@@ -340,7 +340,7 @@
     marks where it falls short of black, certifying a frontier-beating combination, and in every
     real market that certificate turned out to be one model&#39;s mishandled answer format, gone
     by 2025. Magenta: twice the found arbitrage gap, the search&#39;s floor on what combining
-    actually buys. Violet: the share of the benchmark on which every individually affordable model is wrong at once, far smaller than any core. The remaining layers &mdash; the exact 0/1 and no-relabeling minima, the worked example&#39;s core and its two ceilings, and the orange best-found line &mdash; live in the interactive widget below, toggleable per line.</figcaption>
+    actually buys. Violet: the share of the benchmark on which every individually affordable model is wrong at once, far smaller than any core. Columns washed solid magenta mark budgets where the found gap is positive, striped magenta where it survives with relabeling forbidden, darker for larger gaps. The remaining layers &mdash; the exact 0/1 and no-relabeling minima, the worked example&#39;s core and its two ceilings, and the orange best-found line &mdash; live in the interactive widget below, toggleable per line.</figcaption>
   </figure>
 
   <h2>Explore all ten markets</h2>
@@ -586,6 +586,7 @@ const MARKETS_W3 = [{"tab": "Oct 2023 \u00b7 HELM", "data": {"n": 14038, "defaul
 
 function initExplorer(root, DATA, opts) {
   opts = opts || {};
+  const uid = Math.random().toString(36).slice(2, 8);
   const NS = "http://www.w3.org/2000/svg";
   const W = 760, H = 430, ML = 56, MR = 14, MT = 12, MB = 46;
   const bs = DATA.budgets;
@@ -634,7 +635,7 @@ function initExplorer(root, DATA, opts) {
   // line visibility is shared page-wide, so toggles persist across market tabs.
   // the greedy collection's layers default OFF: the ochre minimum already accounts
   // for every affordable collection, the greedy one included.
-  const DEFAULT_OFF = ["beta", "ceil", "ceilRaw", "gap2Raw"];
+  const DEFAULT_OFF = ["beta", "ceil", "ceilRaw"];
   window.__xwVis = window.__xwVis || {};
   const vis = window.__xwVis;
   SERIES.forEach(s => { if (!(s.key in vis)) vis[s.key] = DEFAULT_OFF.indexOf(s.key) < 0; });
@@ -653,7 +654,9 @@ function initExplorer(root, DATA, opts) {
      ${bs.some(r => r.minG) ? '<span><span style="color:var(--ochre); margin-right:5px; font-size:12px; vertical-align:middle;">▲</span>the minimizing collection’s members</span>' : ""}
      ${bs.some(r => r.minCert) ? '<span><span style="color:var(--ochre); margin-right:5px; font-size:15px; vertical-align:middle;">★</span>its certified combination</span>' : ""}
      ${bs.some(r => r.found && r.twoAlpha - r.arb2 > 0.002) ? '<span><span style="color:var(--magenta); margin-right:5px; font-size:15px; vertical-align:middle;">▼</span>the found combination’s members (point-down, larger)</span><span><span style="color:var(--magenta); margin-right:5px; font-size:17px; vertical-align:middle;">★</span>the best combination found, at twice its error</span>' : ""}
-     <span class="xw-hint">click a budget &middot; &larr; &rarr; to step &middot; click a legend entry to toggle its line</span></div>
+     <span><span style="display:inline-block;width:14px;height:11px;background:var(--magenta);opacity:.35;margin-right:5px;vertical-align:middle;"></span>column wash: the found arbitrage gap is positive there (darker = larger)</span>
+     <span><span style="display:inline-block;width:14px;height:11px;margin-right:5px;vertical-align:middle;background:repeating-linear-gradient(45deg,var(--magenta) 0 2px,transparent 2px 5px);opacity:.75;"></span>striped: the gap that survives without relabeling</span>
+     <span class="xw-hint">click a budget &middot; &larr; &rarr; to step &middot; click a legend entry to toggle its line &middot; the washes follow their gap lines' toggles</span></div>
      <div class="xw-body"><svg viewBox="0 0 ${W} ${H}" role="img"></svg>
      <div class="xw-side"><div class="xcard" data-card="budget"></div>
      <div class="xcard" data-card="frontier"></div><div class="xcard" data-card="mincollection"></div>
@@ -709,6 +712,26 @@ function initExplorer(root, DATA, opts) {
                  transform: `rotate(-90 14 ${(MT + H - MB) / 2})`, "text-anchor": "middle"
                }).textContent = "share of the benchmark";
     el("line", { x1: ML, x2: W - MR, y1: Y(0), y2: Y(0), stroke: css("--hairline"), "stroke-width": 1.2 });
+    // full-height column washes: solid magenta wherever the found arbitrage gap is
+    // positive, striped magenta wherever it survives with relabeling forbidden;
+    // darker = larger gap (full darkness near a 4-point gain)
+    const defs = el("defs", {});
+    const pat = el("pattern", { id: `mgs-${uid}`, width: 7, height: 7,
+                                patternUnits: "userSpaceOnUse",
+                                patternTransform: "rotate(45)" }, defs);
+    el("rect", { x: 0, y: 0, width: 3, height: 7, fill: css("--magenta") }, pat);
+    const washA = g => Math.min(0.5, 6 * g).toFixed(3);
+    if (vis.gap2 || vis.gap2Raw) bs.forEach((r2, i) => {
+      const x1 = X(r2.b1k), x2 = (i + 1 < bs.length) ? X(bs[i + 1].b1k) : X(xmax);
+      const g = r2.twoAlpha - r2.arb2;
+      if (vis.gap2 && g > 0.002)
+        el("rect", { x: x1, y: MT, width: x2 - x1, height: H - MT - MB,
+                     fill: css("--magenta"), opacity: washA(g) });
+      const gr = r2.arb2Raw !== undefined ? r2.twoAlpha - r2.arb2Raw : 0;
+      if (vis.gap2Raw && gr > 0.002)
+        el("rect", { x: x1, y: MT, width: x2 - x1, height: H - MT - MB,
+                     fill: `url(#mgs-${uid})`, opacity: washA(gr) });
+    });
     // deficit wash: where the LOWER of the two core lines falls short of 2 alpha
     if (vis.twoAlpha && (vis.minCore || vis.beta)) bs.forEach((r, i) => {
       const low = r.minCore !== undefined && vis.minCore
