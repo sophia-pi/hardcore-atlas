@@ -198,7 +198,7 @@
     fits within B. This is a set of models one buyer could call together on the same query, for
     at most B. When you select a budget in the widget, these are the triangles, each drawn at its
     own price and twice its error.</li>
-    <li><span class="rail"><i class="dash" style="border-color:var(--ochre)"></i><i style="border-color:var(--beta)"></i><i class="dot" style="border-color:var(--aqua)"></i></span><strong>The hard core of a collection, and the ochre line: its minimum over all of them.</strong>
+    <li><span class="rail"><i class="dash" style="border-color:var(--ochre)"></i><i class="dot" style="border-color:var(--aqua)"></i><i style="border-color:var(--beta)"></i></span><strong>The hard core of a collection; the ochre, green and light-blue lines.</strong>
     Now the actual measurement. We look for a weighting of the benchmark: each question i gets a
     weight w<sub>i</sub> between 0 and 1 (so no question can be counted more than once, which
     forces the core to be spread out rather than piled on a few freak questions). The weighting
@@ -207,43 +207,72 @@
     model, such as "read C as B, read no-parse as A"): under these weights, the model answers at
     most half of the weight correctly. The same must hold for each constant guess, so no answer
     letter may carry more than half the total weight. Among all weightings satisfying this, a
-    linear program finds one of <em>maximum total weight</em>, exactly. That maximum, as a share
-    of the benchmark, is &beta;, the light-blue line. A larger total weight also means a more
-    spread-out core once normalised, so "largest" and "smoothest" are the same thing here. In
-    practice the optimal weights come out almost entirely 0 or 1, so the witness is literally a
-    list of questions. The headline is the ochre dashed line: the certified exact minimum of this
-    quantity over every jointly affordable collection, computed as described just below, so no
-    collection choice is left in it. The light-blue line shows the same quantity for the worked example alone (hidden by default). The green dotted line is the ochre minimum computed with one extra restriction: every question must be fully in or fully out of the core (weights exactly 0 or 1), so the core is a plain subset of questions. That restriction turns each linear program into an integer program; it is still solved exactly, by a branch-and-bound over the same constraints, and its minimum over all jointly affordable collections is certified budget by budget with the same union-and-candidate argument as the ochre line. In every market it comes out equal to the ochre minimum rounded to whole questions, so the green dotted line lies exactly on the ochre dashed one: making the core a plain list of questions costs nothing.</li>
-    <li><span class="rail"><i class="dash" style="border-color:var(--navy)"></i><i class="dash" style="border-color:var(--red)"></i><i style="border-color:var(--violet)"></i></span><strong>The dark-blue dashed line: the ceiling one model already forces.</strong> For
+    linear program finds one of <em>maximum total weight</em>, exactly; that maximum, as a share
+    of the benchmark, is the collection's hard core size &beta;. (A larger total weight also
+    means a more spread-out core once normalised, so "largest" and "smoothest" are the same
+    thing.) Three lines come from this quantity. The <em>ochre dashed line</em> is the headline:
+    the certified exact minimum of &beta; over every jointly affordable collection, computed by
+    the union-and-candidate search unfolded below, so no collection choice is left in it. The
+    <em>green dotted line</em> is the same minimum with one extra restriction: every question
+    must be fully in or fully out of the core (weights exactly 0 or 1), so the core is a plain
+    subset of questions. That restriction turns each linear program into an integer program; it
+    is still solved exactly, by a branch-and-bound over the same constraints, and the same
+    budget-by-budget certification applies. It comes out equal to the ochre minimum rounded to
+    whole questions in every market, so the green dots lie exactly on the ochre dashes: making
+    the core a plain list of questions costs nothing. The <em>light-blue line</em> is &beta; for
+    the worked example of step 3 alone; it is hidden by default.</li>
+    <li><span class="rail"><i class="dash" style="border-color:var(--navy)"></i><i class="dash" style="border-color:var(--red)"></i><i class="dot" style="border-color:var(--rust)"></i><i style="border-color:var(--violet)"></i></span><strong>The ceilings one model forces, and the no-relabeling minimum.</strong> For
     each member alone, apply its best fixed relabeling (chosen with hindsight) and count the
-    errors that remain; call the smallest such error, over the collection's members, the best
+    errors that remain; the smallest such error over the collection's members is the best
     member's decoded error. No common core can be larger than twice that number: the core must
-    hold that member at fifty percent, so at least half the core's weight must sit on that
-    member's remaining errors, and there are only so many of them. The dark-blue dashed line
-    plots this ceiling. It needs no optimisation, only counting, and is computed independently of
-    step 4. The red dashed line is the same ceiling computed with no relabeling allowed: every model is read exactly as written, and an answer that did not parse simply counts as wrong (twice the best member&#39;s raw error). The brick-red dotted line recomputes the ochre minimum under that same no-relabeling rule: for each collection the core keeps one requirement per member instead of 1,024 (with fewer requirements more weightings qualify, so each collection&#39;s no-relabeling core can only be larger than its full core), and the minimum over all jointly affordable collections is certified budget by budget with the same union-and-candidate argument as the ochre line, each step one exact linear program. In every real market this minimum lands exactly on the black line at every budget: once relabeling is forbidden, no affordable collection of any composition can be pushed below twice the frontier error, the cleanest statement yet that every certified arbitrage was an answer-format fix. The designed market is the exception: its minimum drops to 0.32 with the specialist trio, far below black, because the trio&#39;s advantage is a genuine vote and never needed relabeling. The violet line is the share of the benchmark on which every model that is individually affordable at the budget, every model on the menu costing at most B, regardless of any collection, is wrong at once; it steps down as a growing budget admits more models, and no combination of affordable models can be right on those questions.</li>
-    <li><span class="rail"><i style="border-color:var(--arb)"></i><i style="border-color:var(--magenta)"></i><span class="glyph" style="color:var(--warm)"><span>★</span></span></span><strong>Read the chart by comparing the lines.</strong> If the market really leaves no
-    arbitrage at B, the ochre minimum must reach black, and with it every collection's β. Where ochre falls short (the orange shading), the
-    shortfall is a <em>certificate</em>: the proof behind step 4 is constructive, so a gap of d
-    guarantees that some fixed lookup-table combination of the minimizing collection beats the best
-    affordable single model by at least d/2 accuracy points on these questions. In the widgets,
-    the certified combination itself is then extracted from the linear program's dual and shown:
-    its explicit affine weights over the collection, the decision rule, and its verified error,
-    starred on the chart at its support cost. (With the worked example toggled on: where its
-    light-blue core sits below its dark-blue ceiling, its members are certified as genuinely
-    complementary; where the two coincide, the test certifies no complementarity at all.) Finally, the orange line plots twice the error of
-    the best combination the search actually finds at each budget (every model raw and relabeled,
-    plus plurality votes over affordable subsets: exhaustive over every subset on small menus and
-    over every subset of up to five near-frontier models, with sampled larger supports elsewhere),
-    so the distance between black and orange is twice the found arbitrage; the magenta line plots that difference directly. A dotted magenta companion plots the same found gap when the search may not relabel anything: its candidates are the raw single models and the plurality votes only, with an unparsed answer counted as wrong. Where the solid magenta line is positive but the dotted one sits at zero, everything the search found was an answer-format fix. The certified combinations from both the greedy and the minimizing collections are folded into this line; even so it remains a lower bound on the true arbitrage, because the exact best weighted vote under a support-cost constraint is a combinatorial optimization no search here solves. Orange can sit below
-    black even where the ochre minimum reaches black: arbitrage without a certificate, the
-    one-directionality made visible.</li>
+    hold that member at fifty percent, so at least half of the core's weight must sit on that
+    member's remaining errors, and there are only so many of them. The <em>dark-blue dashed
+    line</em> plots this ceiling for the worked example; it needs no optimisation, only
+    counting, and is computed independently of step 4. The <em>red dashed line</em> is the same
+    ceiling with no relabeling allowed: every model read exactly as written, an answer that did
+    not parse counted as wrong (twice the best member's raw error). The <em>brick-red dotted
+    line</em> takes that no-relabeling rule back to step 4 and minimizes: each collection's core
+    now carries one requirement per member instead of 1,024 (fewer requirements, so more
+    weightings qualify and the core can only grow), and the minimum over all jointly affordable
+    collections is certified budget by budget like the ochre line, each step one exact linear
+    program. In every real market this minimum lands exactly on the black line at every budget:
+    once relabeling is forbidden, no affordable collection of any composition can be pushed
+    below twice the frontier error, the cleanest statement that every certified arbitrage was an
+    answer-format fix. The designed market is the exception: its minimum drops to 0.32 with the
+    specialist trio, whose advantage is a genuine vote and never needed relabeling. Last, the
+    <em>violet line</em> is the share of the benchmark on which every individually affordable
+    model (every model on the menu costing at most B, regardless of any collection) is wrong at
+    once; it steps down as a growing budget admits more models, and no combination of affordable
+    models can be right on those questions.</li>
+    <li><span class="rail"><i style="border-color:var(--arb)"></i><i style="border-color:var(--magenta)"></i><i class="dot" style="border-color:var(--magenta)"></i><span class="glyph" style="color:var(--warm)"><span>&#9733;</span></span></span><strong>Read the chart by comparing the lines.</strong> If the market really leaves no
+    arbitrage at B, the ochre minimum must reach black, and with it every collection's &beta;.
+    Where ochre falls short (the orange shading), the shortfall is a <em>certificate</em>: the
+    proof behind step 4 is constructive, so a gap of d guarantees that some fixed lookup-table
+    combination of the minimizing collection beats the best affordable single model by at least
+    d/2 accuracy points on these questions. The certified combination itself is extracted from
+    the linear program's dual and shown in the sidebar: explicit affine weights over the
+    collection, the decision rule, and its verified error, starred on the chart at its support
+    cost. (With the worked example toggled on: where its light-blue core sits below its
+    dark-blue ceiling, its members are certified as genuinely complementary; where the two
+    coincide, the test certifies no complementarity at all.) The <em>orange line</em> is a
+    search, not a certificate: twice the error of the best combination actually found at each
+    budget, over every model raw and relabeled plus plurality votes over affordable subsets
+    (exhaustive over every subset on small menus and over every subset of up to five
+    near-frontier models, with sampled larger supports elsewhere; the certified combinations are
+    folded in). The distance between black and orange is twice the found arbitrage, and the
+    solid <em>magenta line</em> plots that difference directly. The dotted magenta line repeats
+    it with relabeling forbidden: raw single models and plurality votes only, an unparsed answer
+    counted as wrong; where solid magenta is positive but dotted magenta sits at zero,
+    everything the search found was an answer-format fix. Both are measured in hindsight on the
+    same questions the search used, and both are lower bounds on the true arbitrage, because the
+    exact best weighted vote under a support-cost constraint is a combinatorial optimization no
+    search here solves. Orange can sit below black even where the ochre minimum reaches black:
+    arbitrage without a certificate, the one-directionality made visible.</li>
   </ol>
   <p>In one line, the sandwich the curves trace out:</p>
   <div class="math">2 &times; (best combination's error on G) &nbsp;&le;&nbsp; &beta; &nbsp;&le;&nbsp; 2 &times; (best single member's decoded error)</div>
   <p>with the prediction being &beta; &ge; 2&alpha;(B) for every affordable collection wherever the market is efficient; equivalently, the ochre minimum must stay at or above black. One
-  caution before the charts: the certificate is one-directional. Light blue below black proves a
-  frontier-beating combination exists; light blue at or above black proves nothing either way.</p>
+  caution before the charts: the certificate is one-directional. Ochre below black proves a frontier-beating combination exists; ochre at or above black proves nothing either way.</p>
   <p>One more line removes the last judgment call. The light-blue core belongs to one constructed
   collection, a choice among exponentially many. The <em>ochre dashed line</em> is the certified
   exact minimum of &beta; over <em>all</em> jointly affordable collections, computed without
