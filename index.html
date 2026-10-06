@@ -636,9 +636,35 @@ function initExplorer(root, DATA, opts) {
   // the greedy collection's layers default OFF: the ochre minimum already accounts
   // for every affordable collection, the greedy one included.
   const DEFAULT_OFF = ["beta", "ceil", "ceilRaw"];
+  // marks and shaded regions are toggleable exactly like the lines, through the same
+  // page-wide visibility store; the greedy collection's marks default off with its lines
+  const hasFound = bs.some(r => r.found && r.twoAlpha - r.arb2 > 0.002);
+  const swBlock = (style) => `<span style="display:inline-block;width:14px;height:11px;margin-right:5px;vertical-align:middle;${style}"></span>`;
+  const swGlyph = (ch, color, size) => `<span style="color:var(${color});margin-right:5px;font-size:${size}px;vertical-align:middle;">${ch}</span>`;
+  const MARKS = [
+    { key: "triG", label: "the greedy collection's members, at twice their error",
+      sw: swGlyph("▲", "--beta", 12) }]
+    .concat(bs.some(r => r.cert) ? [{ key: "starG", label: "the certified combination, at twice its error",
+                                      sw: swGlyph("★", "--warm", 15) }] : [])
+    .concat(bs.some(r => r.minG) ? [{ key: "triMin", label: "the minimizing collection's members",
+                                      sw: swGlyph("▲", "--ochre", 12) }] : [])
+    .concat(bs.some(r => r.minCert) ? [{ key: "starMin", label: "its certified combination",
+                                         sw: swGlyph("★", "--ochre", 15) }] : [])
+    .concat(hasFound ? [{ key: "markFound",
+                          label: "the found combination: its members (point-down) and its star",
+                          sw: swGlyph("▼", "--magenta", 15) }] : [])
+    .concat([{ key: "washDef", label: "shading: a core sits below black (the certified gap)",
+               sw: swBlock("background:var(--warm);opacity:.3;") },
+             { key: "washGap", label: "column wash: the found arbitrage gap is positive there (darker = larger)",
+               sw: swBlock("background:var(--magenta);opacity:.35;") }])
+    .concat(bs[0].arb2Raw !== undefined
+      ? [{ key: "washGapRaw", label: "striped: the gap that survives without relabeling",
+           sw: swBlock("background:repeating-linear-gradient(45deg,var(--magenta) 0 2px,transparent 2px 5px);opacity:.75;") }] : []);
+  const MARKS_OFF = ["triG", "starG"];
   window.__xwVis = window.__xwVis || {};
   const vis = window.__xwVis;
   SERIES.forEach(s => { if (!(s.key in vis)) vis[s.key] = DEFAULT_OFF.indexOf(s.key) < 0; });
+  MARKS.forEach(s => { if (!(s.key in vis)) vis[s.key] = MARKS_OFF.indexOf(s.key) < 0; });
   const PAINT = ["ceilRaw", "allWrong", "gap2", "gap2Raw", "twoAlpha", "minRaw",
                  "twoAlphaMix", "arb2", "beta", "ceil", "minCore", "min01"];
   const val = (r, key) => key === "gap2" ? r.twoAlpha - r.arb2
@@ -649,14 +675,10 @@ function initExplorer(root, DATA, opts) {
        `<span class="lgd${vis[s.key] ? "" : " off"}" data-key="${s.key}" role="button" tabindex="0"
          title="click to show or hide this line"><span class="sw"
          style="border-color:var(${s.c}); border-top-style:${s.st}"></span>${s.label}</span>`).join("")}
-     <span><span style="color:var(--beta); margin-right:5px; font-size:12px; vertical-align:middle;">▲</span>the greedy collection's members, at twice their error</span>
-     ${hasCert ? '<span><span style="color:var(--warm); margin-right:5px; font-size:15px; vertical-align:middle;">★</span>the certified combination, at twice its error</span>' : ""}
-     ${bs.some(r => r.minG) ? '<span><span style="color:var(--ochre); margin-right:5px; font-size:12px; vertical-align:middle;">▲</span>the minimizing collection’s members</span>' : ""}
-     ${bs.some(r => r.minCert) ? '<span><span style="color:var(--ochre); margin-right:5px; font-size:15px; vertical-align:middle;">★</span>its certified combination</span>' : ""}
-     ${bs.some(r => r.found && r.twoAlpha - r.arb2 > 0.002) ? '<span><span style="color:var(--magenta); margin-right:5px; font-size:15px; vertical-align:middle;">▼</span>the found combination’s members (point-down, larger)</span><span><span style="color:var(--magenta); margin-right:5px; font-size:17px; vertical-align:middle;">★</span>the best combination found, at twice its error</span>' : ""}
-     <span><span style="display:inline-block;width:14px;height:11px;background:var(--magenta);opacity:.35;margin-right:5px;vertical-align:middle;"></span>column wash: the found arbitrage gap is positive there (darker = larger)</span>
-     <span><span style="display:inline-block;width:14px;height:11px;margin-right:5px;vertical-align:middle;background:repeating-linear-gradient(45deg,var(--magenta) 0 2px,transparent 2px 5px);opacity:.75;"></span>striped: the gap that survives without relabeling</span>
-     <span class="xw-hint">click a budget &middot; &larr; &rarr; to step &middot; click a legend entry to toggle its line &middot; the washes follow their gap lines' toggles</span></div>
+     ${MARKS.map(s =>
+       `<span class="lgd${vis[s.key] ? "" : " off"}" data-key="${s.key}" role="button" tabindex="0"
+         title="click to show or hide">${s.sw}${s.label}</span>`).join("")}
+     <span class="xw-hint">click a budget &middot; &larr; &rarr; to step &middot; click a legend entry to toggle that line, mark or shading</span></div>
      <div class="xw-body"><svg viewBox="0 0 ${W} ${H}" role="img"></svg>
      <div class="xw-side"><div class="xcard" data-card="budget"></div>
      <div class="xcard" data-card="frontier"></div><div class="xcard" data-card="mincollection"></div>
@@ -721,21 +743,20 @@ function initExplorer(root, DATA, opts) {
                                 patternTransform: "rotate(45)" }, defs);
     el("rect", { x: 0, y: 0, width: 3, height: 7, fill: css("--magenta") }, pat);
     const washA = g => Math.min(0.5, 6 * g).toFixed(3);
-    if (vis.gap2 || vis.gap2Raw) bs.forEach((r2, i) => {
+    if (vis.washGap || vis.washGapRaw) bs.forEach((r2, i) => {
       const x1 = X(r2.b1k), x2 = (i + 1 < bs.length) ? X(bs[i + 1].b1k) : X(xmax);
       const g = r2.twoAlpha - r2.arb2;
-      if (vis.gap2 && g > 0.002)
+      if (vis.washGap && g > 0.002)
         el("rect", { x: x1, y: MT, width: x2 - x1, height: H - MT - MB,
                      fill: css("--magenta"), opacity: washA(g) });
       const gr = r2.arb2Raw !== undefined ? r2.twoAlpha - r2.arb2Raw : 0;
-      if (vis.gap2Raw && gr > 0.002)
+      if (vis.washGapRaw && gr > 0.002)
         el("rect", { x: x1, y: MT, width: x2 - x1, height: H - MT - MB,
                      fill: `url(#mgs-${uid})`, opacity: washA(gr) });
     });
-    // deficit wash: where the LOWER of the two core lines falls short of 2 alpha
-    if (vis.twoAlpha && (vis.minCore || vis.beta)) bs.forEach((r, i) => {
-      const low = r.minCore !== undefined && vis.minCore
-        ? (vis.beta ? Math.min(r.beta, r.minCore) : r.minCore) : r.beta;
+    // deficit wash: where the lower of the core minima falls short of 2 alpha
+    if (vis.washDef) bs.forEach((r, i) => {
+      const low = r.minCore !== undefined ? Math.min(r.beta, r.minCore) : r.beta;
       if (low < r.twoAlpha - 1e-9) {
         const x2 = (i + 1 < bs.length) ? X(bs[i + 1].b1k) : X(xmax);
         el("rect", { x: X(r.b1k), y: Y(r.twoAlpha), width: x2 - X(r.b1k),
@@ -766,7 +787,7 @@ function initExplorer(root, DATA, opts) {
       el("path", { d: `M${mx.toFixed(1)} ${(my - f * 6.5 * sc).toFixed(1)}L${(mx - 6 * sc).toFixed(1)} ${(my + f * 5 * sc).toFixed(1)}L${(mx + 6 * sc).toFixed(1)} ${(my + f * 5 * sc).toFixed(1)}Z`,
                    fill: css(color), stroke: css("--surface"), "stroke-width": 1.5 });
     };
-    if (vis.beta) DATA.collections[r.cid].members.forEach(m => tri(m, "--beta"));
+    if (vis.triG) DATA.collections[r.cid].members.forEach(m => tri(m, "--beta"));
     el("circle", { cx: x, cy: Y(r.ceil), r: 8, fill: "none", stroke: css("--navy"), "stroke-width": 1.6 });
     el("circle", { cx: x, cy: Y(r.ceilRaw), r: 4, fill: css("--red"), stroke: css("--surface"), "stroke-width": 1.6 });
     el("circle", { cx: x, cy: Y(r.allWrong), r: 4, fill: css("--violet"), stroke: css("--surface"), "stroke-width": 1.6 });
@@ -785,15 +806,15 @@ function initExplorer(root, DATA, opts) {
       }
       el("path", { d: d + "Z", fill: css(color), stroke: css("--surface"), "stroke-width": 1.6 });
     };
-    if (r.cert && vis.beta) star(X(Math.max(r.cert.cost1k, xmin)), Y(2 * r.cert.err), "--warm");
+    if (r.cert && vis.starG) star(X(Math.max(r.cert.cost1k, xmin)), Y(2 * r.cert.err), "--warm");
     // the found combination's marks are point-down and doubled so they stay visible
     // under the ochre marks; the ochre marks are drawn last, on top of everything.
-    if (vis.arb2 && r.found && (r.twoAlpha - r.arb2) > 0.002) {
+    if (vis.markFound && r.found && (r.twoAlpha - r.arb2) > 0.002) {
       r.found.members.forEach(m => { if (m.cost1k !== undefined && m.err !== undefined) tri(m, "--magenta", { flip: true, scale: 2 }); });
       star(X(Math.max(r.found.cost1k, xmin)), Y(r.arb2), "--magenta", { flip: true, scale: 2 });
     }
-    if (r.minG && vis.minCore) r.minG.forEach(m => tri(m, "--ochre"));
-    if (r.minCert && vis.minCore) star(X(Math.max(r.minCert.cost1k, xmin)), Y(2 * r.minCert.err), "--ochre");
+    if (r.minG && vis.triMin) r.minG.forEach(m => tri(m, "--ochre"));
+    if (r.minCert && vis.starMin) star(X(Math.max(r.minCert.cost1k, xmin)), Y(2 * r.minCert.err), "--ochre");
     bs.forEach((r2, i) => {
       const x1 = i ? (X(bs[i - 1].b1k) + X(r2.b1k)) / 2 : ML;
       const x2 = (i + 1 < bs.length) ? (X(r2.b1k) + X(bs[i + 1].b1k)) / 2 : W - MR;
