@@ -693,7 +693,8 @@ function initExplorer(root, DATA, opts) {
   SERIES.forEach(s => { if (!(s.key in vis)) vis[s.key] = DEFAULT_OFF.indexOf(s.key) < 0; });
   MARKS.forEach(s => { if (!(s.key in vis)) vis[s.key] = MARKS_OFF.indexOf(s.key) < 0; });
   const PAINT = ["ceilRaw", "sansFrontier", "allWrong", "gap2", "gap2Raw", "twoAlpha",
-                 "minRaw", "twoAlphaMix", "arb2", "beta", "ceil", "minCore", "min01"];
+                 "thr43", "minRaw", "twoAlphaMix", "arb2", "beta", "confMat", "ceil",
+                 "minCore", "min01"];
   const val = (r, key) => key === "gap2" ? r.twoAlpha - r.arb2
     : key === "gap2Raw" ? r.twoAlpha - r.arb2Raw : r[key];
   const hasCert = bs.some(r => r.cert);
