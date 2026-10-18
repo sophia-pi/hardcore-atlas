@@ -244,35 +244,33 @@
     model (every model on the menu costing at most B, regardless of any collection) is wrong at
     once; it steps down as a growing budget admits more models, and no combination of affordable
     models can be right on those questions.</li>
-    <li><span class="rail"><i style="border-color:var(--pine)"></i><i class="dash" style="border-color:var(--pine)"></i></span><strong>The confusion matrix core, and its own floor; the two pine lines.</strong>
+    <li><span class="rail"><i style="border-color:var(--pine)"></i><i class="dash" style="border-color:var(--pine)"></i></span><strong>The confusion matrix core's minimum, and its floor; the two pine lines.</strong>
     A newer, stricter version of the hard core asks for more than holding every relabeled member
     at fifty percent. It asks for a randomized relabeling of the benchmark itself: each
     question's true label may be switched to another answer option with some probability, every
     model's answers stay exactly as given, and the relabeling must leave two things unchanged in
     expectation. First, every member's confusion matrix: the table counting how often that model
     gives each output (no parse, A, B, C or D) when the truth is each label, five rows by four
-    columns. Second, the overall frequency of each label. The <em>solid pine line</em> is the
-    largest expected fraction of questions such a relabeling can change, for the same worked
-    example collection as the blue line, computed as one exact linear program per collection and
-    verified by an independent second program (an exact duality). It can never sit above the
-    blue line, because preserving the confusion matrices already forces every relabeled member
-    to fifty percent. Its no-arbitrage floor is different: if no affordable combination beats
-    the frontier, this core must be at least four thirds of the frontier error, the <em>dashed
-    pine line</em>, rather than twice it. A solid pine line below its dashed floor would certify
-    an affordable combination beating the frontier at that budget. In every real market the
-    solid line stays above the floor at every budget; in the designed market it falls below,
-    certifying the planted specialist vote. As with every line on this chart, the condition is
-    necessary, never sufficient: a core above its floor certifies nothing in either
-    direction. The pine line with the longer dashes extends this from one collection to all of
-    them: the smallest confusion matrix core over every jointly affordable collection at the
-    budget, found by the same union-bound and branch-and-bound search as the ochre line. At most
-    budgets that search closes and the line is the exact minimum. At the budgets where it hit its
-    effort cap (some crowded budgets of the three 2026 live markets), the minimum is not pinned;
-    a pale pine band there shows the certified range it lies in, with the longer-dashed line as
-    the band's upper edge (the smallest core of any collection the search actually found) and a
-    dotted pine edge as its certified floor. A band lying entirely above the four-thirds floor
-    still decides that nothing is certifiable at that budget; a band containing the floor is
-    genuinely undecided.</li>
+    columns. Second, the overall frequency of each label. A collection's confusion matrix core is
+    the largest expected fraction of questions such a relabeling can change, computed as one
+    exact linear program per collection and verified by an independent second program (an exact
+    duality). It can never exceed the same collection's hard core from step 4, because preserving
+    the confusion matrices already forces every relabeled member to fifty percent. The <em>solid
+    pine line</em> is this core minimized over <em>every</em> jointly affordable collection at
+    the budget, by the same union-bound and branch-and-bound search as the ochre line. At most
+    budgets the search closes and the line is the exact minimum. At the budgets where it hit its
+    effort cap, the minimum is not pinned; a pale pine band there shows the certified range it
+    lies in, with the solid line as the band's upper edge (the smallest core of any collection
+    the search actually found) and a dotted pine edge as its certified floor. The minimum's
+    no-arbitrage floor is the <em>dashed pine line</em>: if no affordable combination beats the
+    frontier, the minimum must be at least four thirds of the frontier error, rather than twice
+    it. A solid pine line, or a whole band, below the dashed floor certifies an affordable
+    combination beating the frontier at that budget; a band containing the floor is genuinely
+    undecided. In every real market the minimum, and every band, stays at or above the floor at
+    every budget; in the designed market the minimum falls below it at the budgets where the
+    planted specialist trio is affordable and the frontier is still weak. As with every line on
+    this chart, the condition is necessary, never sufficient: a minimum above its floor
+    certifies nothing in either direction.</li>
     <li><span class="rail"><i style="border-color:var(--arb)"></i><i style="border-color:var(--magenta)"></i><i class="dot" style="border-color:var(--magenta)"></i><span class="glyph" style="color:var(--warm)"><span>&#9733;</span></span></span><strong>Read the chart by comparing the lines.</strong> If the market really leaves no
     arbitrage at B, the ochre minimum must reach black, and with it every collection's &beta;.
     Where ochre falls short (the orange shading), the shortfall is a <em>certificate</em>: the
@@ -658,14 +656,11 @@ function initExplorer(root, DATA, opts) {
     .concat(bs.some(r => r.sansFrontier !== undefined)
       ? [{ key: "sansFrontier", label: "core without relabeling of all affordable models except the frontier",
            c: "--lilac", st: "dotted", dash: "2 4.5", w: 2.2 }] : [])
-    .concat(bs[0].confMat !== undefined
-      ? [{ key: "confMat", label: "confusion matrix core (greedy collection)",
-           c: "--pine", st: "solid", dash: null, w: 3.0 },
-         { key: "thr43", label: "4⁄3 × frontier error (the confusion matrix core's floor)",
-           c: "--pine", st: "dashed", dash: "8 5", w: 2.0 }] : [])
     .concat(bs.some(r => r.cmMin !== undefined)
       ? [{ key: "cmMin", label: "min of confusion matrix core over all affordable collections (band where not closed)",
-           c: "--pine", st: "dashed", dash: "12 5", w: 2.4 }] : [])
+           c: "--pine", st: "solid", dash: null, w: 3.0 },
+         { key: "thr43", label: "4⁄3 × frontier error (the minimum's no-arbitrage floor)",
+           c: "--pine", st: "dashed", dash: "8 5", w: 2.0 }] : [])
     .concat([
     { key: "beta", label: "max hard core size, β (greedy collection)", c: "--beta", st: "solid", dash: null, w: 3.6 },
     { key: "ceil", label: "ceiling: best member relabeled, ×2 (greedy collection)", c: "--navy", st: "dashed", dash: "6 5", w: 2.4 },
@@ -705,7 +700,7 @@ function initExplorer(root, DATA, opts) {
   SERIES.forEach(s => { if (!(s.key in vis)) vis[s.key] = DEFAULT_OFF.indexOf(s.key) < 0; });
   MARKS.forEach(s => { if (!(s.key in vis)) vis[s.key] = MARKS_OFF.indexOf(s.key) < 0; });
   const PAINT = ["ceilRaw", "sansFrontier", "allWrong", "gap2", "gap2Raw", "twoAlpha",
-                 "thr43", "minRaw", "twoAlphaMix", "arb2", "beta", "confMat", "cmMin",
+                 "thr43", "minRaw", "twoAlphaMix", "arb2", "beta", "cmMin",
                  "ceil", "minCore", "min01"];
   const val = (r, key) => key === "gap2" ? r.twoAlpha - r.arb2
     : key === "gap2Raw" ? r.twoAlpha - r.arb2Raw : r[key];
@@ -801,7 +796,7 @@ function initExplorer(root, DATA, opts) {
     });
     // certified bracket of the confusion-matrix-core minimum, where its search did
     // not close: a pale pine band from the certified floor up to the smallest core
-    // actually found; the dashed pine line is the band's upper edge
+    // actually found; the solid pine line is the band's upper edge
     if (vis.cmMin) bs.forEach((r2, i) => {
       if (r2.cmMin === undefined || r2.cmMinLo === undefined) return;
       if (r2.cmMin - r2.cmMinLo <= 1e-9) return;
