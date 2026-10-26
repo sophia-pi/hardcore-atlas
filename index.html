@@ -141,9 +141,17 @@
   .xw .subj .bar { height: 7px; background: var(--accent); border-radius: 3px; }
   .xw .subj .val { color: var(--muted); font-family: var(--mono); font-size: 10.8px; }
 
+
+  .sitenav { display: flex; gap: 6px; max-width: 730px; margin: 26px auto -30px; }
+  .sitenav a { font: 600 12.5px/1.2 "Source Sans 3", sans-serif; padding: 6px 14px;
+    border-radius: 99px; border: 1px solid var(--hairline); background: var(--surface);
+    color: var(--secondary); text-decoration: none; }
+  .sitenav a.sel { background: var(--accent-soft); color: var(--accent);
+    border-color: var(--accent); }
 </style>
 </head>
 <body>
+<nav class="sitenav" aria-label="Site sections"><a href="index.html" class="sel">The hard core</a><a href="routing.html">Routing</a></nav>
 
 
 <div class="page">
