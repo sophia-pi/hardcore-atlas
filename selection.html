@@ -218,7 +218,7 @@
   the frontier. The orange line is the optimal perfect-verifier team; the models it buys at
   the selected budget are filled in orange. The dashed green line, off by default, is the
   average-bill baseline: the best mix of a cheap and a dear model when only the mean bill must
-  fit the budget. The orange wash marks budgets where the team beats the frontier, darker
+  fit the budget. The magenta wash marks budgets where the team beats the frontier, darker
   where it beats it by more. Click a budget, or step with the arrow keys.</p>
   <div class="xw" id="ws" tabindex="0" aria-label="Interactive chart: the perfect-verifier selection gap in every market, budget by budget. Use the tabs to switch market and the left and right arrow keys to change the selected budget."></div>
 
@@ -271,7 +271,7 @@ function initSelectionExplorer(root, DATA, opts) {
     { key: "wsDots", label: "the models on sale (cost, error)", sw: swGlyph("○", "--muted", 13) },
     { key: "wsUsed", label: "models the team buys at this budget", sw: swGlyph("●", "--arb", 13) },
     { key: "wsWash", label: "column wash: the team beats the frontier there (darker = larger)",
-      sw: swBlock("background:var(--arb);opacity:.35;") }];
+      sw: swBlock("background:var(--magenta);opacity:.35;") }];
   const DEFAULT_OFF = ["wsEnv", "wsGap"];
   window.__xwVis = window.__xwVis || {};
   const vis = window.__xwVis;
@@ -354,7 +354,7 @@ function initSelectionExplorer(root, DATA, opts) {
       if (g <= 0.0005) return;
       const [x0, x1] = colEdges(i);
       el("rect", { x: x0, y: MT, width: x1 - x0, height: H - MT - MB,
-                   fill: "var(--arb)", opacity: Math.min(0.5, 4 * g).toFixed(3) });
+                   fill: "var(--magenta)", opacity: Math.min(0.5, 4 * g).toFixed(3) });
     });
     SERIES.forEach(s => {
       if (!vis[s.key]) return;
