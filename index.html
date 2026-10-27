@@ -626,7 +626,7 @@ function initExplorer(root, DATA, opts) {
   const bs = DATA.budgets;
   const hasMix = bs[0].twoAlphaMix !== undefined;
   const xmin = bs[0].b1k, xmax = bs[bs.length - 1].b1k * 1.25;
-  const ymax = Math.max(...bs.map(r => r.twoAlpha)) * 1.1;
+  const ymax = (opts.ymax || Math.max(...bs.map(r => r.twoAlpha))) * 1.1;
   const X = v => ML + (Math.log(v) - Math.log(xmin)) / (Math.log(xmax) - Math.log(xmin)) * (W - ML - MR);
   const Y = v => MT + (1 - v / ymax) * (H - MT - MB);
   const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -1152,12 +1152,15 @@ function initExplorer(root, DATA, opts) {
 function initTabbedMarkets(outer, MARKETS) {
   outer.innerHTML = `<div class="xw-tabs"></div><div class="xw-host" tabindex="0"></div>`;
   const tabs = outer.querySelector(".xw-tabs"), host = outer.querySelector(".xw-host");
+  // one shared y-scale across this widget's market tabs, so they compare by eye
+  const ymax = Math.max(...MARKETS.map(M =>
+    Math.max(...M.data.budgets.map(r => r.twoAlpha))));
   let cur = 0;
   function show(i) {
     cur = i;
     tabs.querySelectorAll("button").forEach((b, k) =>
       b.classList.toggle("sel", k === cur));
-    initExplorer(host, MARKETS[cur].data, {});
+    initExplorer(host, MARKETS[cur].data, { ymax });
   }
   tabs.innerHTML = MARKETS.map((M, i) =>
     `<button type="button" data-i="${i}">${M.tab}</button>`).join("");
